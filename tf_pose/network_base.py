@@ -211,6 +211,80 @@ class BaseNetwork(object):
         return output
 
     @layer
+    def MBConv(self, input, expansion, k, stride, c_o, name, relu=True, set_bias=True, ratio=4):
+        kernel_initializer = tf.contrib.layers.variance_scaling_initializer()
+        bias_initializer = tf.constant_initializer(value=0.0)
+        with tf.variable_scope(None, name):
+            with slim.arg_scope([slim.batch_norm], decay=0.999, fused=common.batchnorm_fused, is_training=self.trainable):
+                channel = input.get_shape()[-1]
+                # pointwise conv
+                if expansion > 1:
+                    expand = slim.convolution2d(input,
+                                                channel * expansion,
+                                                stride=1,
+                                                kernel_size=[1, 1],
+                                                activation_fn=tf.nn.swish,
+                                                weights_initializer=_init_xavier,
+                                                biases_initializer=None,
+                                                normalizer_fn=slim.batch_norm,
+                                                trainable=self.trainable,
+                                                weights_regularizer=None,
+                                                scope='pointwise0')
+                else:
+                    expand = input
+                # depthwise conv
+                expand = slim.separable_convolution2d(expand,
+                                                      num_outputs=None,
+                                                      stride=stride,
+                                                      trainable=self.trainable,
+                                                      depth_multiplier=1.0,
+                                                      kernel_size=[k, k],
+                                                      activation_fn=tf.nn.swish,
+                                                      weights_initializer=_init_xavier,
+                                                      weights_regularizer=_l2_regularizer_00004,
+                                                      biases_initializer=None,
+                                                      normalizer_fn=slim.batch_norm,
+                                                      padding=DEFAULT_PADDING,
+                                                      scope='depthwise')
+                # squeeze and excitation
+                # global average pooling
+                feature_size = expand.get_shape()
+                squeeze = tf.reduce_mean(expand, axis=[1, 2], keepdims=True)
+                # squeeze
+                excitation = tf.layers.dense(inputs=squeeze,
+                                             units=channel // ratio,
+                                             activation=tf.nn.swish,
+                                             kernel_initializer=kernel_initializer,
+                                             bias_initializer=bias_initializer,
+                                             name='bottleneck_fc')
+                # excitation
+                excitation = tf.layers.dense(inputs=excitation,
+                                             units=channel * expansion,
+                                             activation=tf.nn.sigmoid,
+                                             kernel_initializer=kernel_initializer,
+                                             bias_initializer=bias_initializer,
+                                             name='recover_fc')
+                # multiply
+                se = tf.tile(excitation, [1, feature_size[1], feature_size[2], 1]) * expand
+                # pointwise conv
+                output = slim.convolution2d(se,
+                                            c_o,
+                                            stride=1,
+                                            kernel_size=[1, 1],
+                                            activation_fn=None,
+                                            weights_initializer=_init_xavier,
+                                            biases_initializer=None,
+                                            normalizer_fn=slim.batch_norm,
+                                            trainable=self.trainable,
+                                            weights_regularizer=None,
+                                            scope='pointwise1')
+                # residual connection
+                if stride == 1 and c_o == channel:
+                    output = output + input
+    
+        return output
+
+    @layer
     def convb(self, input, k_h, k_w, c_o, stride, name, relu=True, set_bias=True, set_tanh=False):
         with slim.arg_scope([slim.batch_norm], decay=0.999, fused=common.batchnorm_fused, is_training=self.trainable):
             output = slim.convolution2d(input, c_o, kernel_size=[k_h, k_w],
@@ -275,6 +349,14 @@ class BaseNetwork(object):
     @layer
     def relu(self, input, name):
         return tf.nn.relu(input, name=name)
+    
+    @layer
+    def swish(self, input, name):
+        return tf.nn.swish(input, name=name)
+	
+    @layer
+    def hswish(self, input, name):
+        return tf.multiply(features, tf.nn.relu6(features + np.float32(3)) * (1. / 6.), name=name)
 
     @layer
     def max_pool(self, input, k_h, k_w, s_h, s_w, name, padding=DEFAULT_PADDING):

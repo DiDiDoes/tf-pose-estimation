@@ -8,6 +8,7 @@ from tf_pose.network_mobilenet_thin import MobilenetNetworkThin
 
 from tf_pose.network_cmu import CmuNetwork
 from tf_pose.network_mobilenet_v2 import Mobilenetv2Network
+from tf_pose.network_efficientnet import EfficientnetNetwork
 
 
 def _get_base_path():
@@ -92,6 +93,11 @@ def get_network(type, placeholder_input, sess_for_load=None, trainable=True):
     elif type == 'vgg':
         net = CmuNetwork({'image': placeholder_input}, trainable=trainable)
         pretrain_path = 'numpy/openpose_vgg16.npy'
+        last_layer = 'Mconv7_stage6_L{aux}'
+
+    elif type == 'efficientnet-b0':
+        net = EfficientnetNetwork({'image': placeholder_input}, trainable=trainable)
+        pretrain_path = 'pretrained/efficientnet-b0/model.ckpt'
         last_layer = 'Mconv7_stage6_L{aux}'
 
     else:
