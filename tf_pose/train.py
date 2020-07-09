@@ -28,18 +28,18 @@ logger.addHandler(ch)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Training codes for Openpose using Tensorflow')
-    parser.add_argument('--model', default='mobilenet_v2_1.4', help='model name')
-    parser.add_argument('--datapath', type=str, default='/data/public/rw/coco/annotations')
-    parser.add_argument('--imgpath', type=str, default='/data/public/rw/coco/')
-    parser.add_argument('--batchsize', type=int, default=64)
-    parser.add_argument('--gpus', type=int, default=4)
+    parser.add_argument('--model', default='efficientnet-b0', help='model name')
+    parser.add_argument('--datapath', type=str, default='/home/ubuntu/coco/annotations')
+    parser.add_argument('--imgpath', type=str, default='/home/ubuntu/coco/')
+    parser.add_argument('--batchsize', type=int, default=16)
+    parser.add_argument('--gpus', type=int, default=1)
     parser.add_argument('--max-epoch', type=int, default=600)
     parser.add_argument('--lr', type=str, default='0.001')
-    parser.add_argument('--tag', type=str, default='test')
+    parser.add_argument('--tag', type=str, default='eff0710')
     parser.add_argument('--checkpoint', type=str, default='')
 
-    parser.add_argument('--input-width', type=int, default=432)
-    parser.add_argument('--input-height', type=int, default=368)
+    parser.add_argument('--input-width', type=int, default=384)
+    parser.add_argument('--input-height', type=int, default=384)
     parser.add_argument('--quant-delay', type=int, default=-1)
     args = parser.parse_args()
 
@@ -52,12 +52,12 @@ if __name__ == '__main__':
     set_network_input_wh(args.input_width, args.input_height)
     scale = 4
 
-    if args.model in ['cmu', 'vgg'] or 'mobilenet' in args.model:
+    if args.model in ['cmu', 'vgg'] or 'mobilenet' in args.model or 'efficientnet' in args.model:
         scale = 8
 
     set_network_scale(scale)
     output_w, output_h = args.input_width // scale, args.input_height // scale
-
+    
     logger.info('define model+')
     with tf.device(tf.DeviceSpec(device_type="CPU")):
         input_node = tf.placeholder(tf.float32, shape=(args.batchsize, args.input_height, args.input_width, 3), name='image')
@@ -78,10 +78,11 @@ if __name__ == '__main__':
     logger.debug(q_inp)
     logger.debug(q_heat)
     logger.debug(q_vect)
-
+    
     # define model for multi-gpu
     q_inp_split, q_heat_split, q_vect_split = tf.split(q_inp, args.gpus), tf.split(q_heat, args.gpus), tf.split(q_vect, args.gpus)
-
+    
+    input_node = tf.placeholder(tf.float32, shape=(args.batchsize, args.input_height, args.input_width, 3), name='image')
     output_vectmap = []
     output_heatmap = []
     losses = []
@@ -94,6 +95,7 @@ if __name__ == '__main__':
                 net, pretrain_path, last_layer = get_network(args.model, q_inp_split[gpu_id])
                 if args.checkpoint:
                     pretrain_path = args.checkpoint
+    
                 vect, heat = net.loss_last()
                 output_vectmap.append(vect)
                 output_heatmap.append(heat)
@@ -163,10 +165,11 @@ if __name__ == '__main__':
     valid_loss_t = tf.summary.scalar("loss_valid", valid_loss)
     valid_loss_ll_t = tf.summary.scalar("loss_valid_lastlayer", valid_loss_ll)
     merged_validate_op = tf.summary.merge([train_img, valid_img, valid_loss_t, valid_loss_ll_t])
-
+    
     saver = tf.train.Saver(max_to_keep=1000)
     config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)
     config.gpu_options.allow_growth = True
+    
     with tf.Session(config=config) as sess:
         logger.info('model weights initialization')
         sess.run(tf.global_variables_initializer())
