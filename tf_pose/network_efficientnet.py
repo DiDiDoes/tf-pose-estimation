@@ -115,10 +115,22 @@ if __name__ == '__main__':
     input = tf.placeholder(tf.float32, shape=(None, 384, 384, 3), name='image')
     network = EfficientnetNetwork({'image': input})
 
-    writer = tf.summary.FileWriter('./log/', graph=tf.get_default_graph())
-    writer.close
+    # writer = tf.summary.FileWriter('./log/', graph=tf.get_default_graph())
+    # writer.close
 
-    variables_to_restore = slim.get_variables_to_restore(include=['efficientnet-b0'])
+    # variables_to_restore = slim.get_variables_to_restore(include=['efficientnet-b0'])
+    
+    saver = tf.train.import_meta_graph('../models/train/effsmall/model_latest-166000.meta')
+    saver.restore(sess, '../models/train/effsmall/model_latest-166000')
+    
+    # Save as .pb file
+    graph_def = tf.get_default_graph().as_graph_def()
+    output_graph_def = graph_util.convert_variables_to_constants(
+        sess, 
+        graph_def, 
+        ['Openpose/concat_stage7']
+    )
+    with tf.gfile.GFile('../models/graph/efficientnet-b0/graph_opt.pb', 'wb') as fid:
+        serialized_graph = output_graph_def.SerializeToString()
+        fid.write(serialized_graph)
 
-    saver = tf.train.Saver(variables_to_restore)
-    saver.restore(sess, './efficientnet-b0/model.ckpt')
