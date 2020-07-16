@@ -177,9 +177,9 @@ if __name__ == '__main__':
         sess.run(tf.global_variables_initializer())
 
         test_var = [var for var in tf.global_variables() if 'efficientnet-b0/stem/' in var.name ]
-        logger.info('backbone_var:%f' %sess.run(test_var[0]))
+        logger.info('backbone_var:%f' %sess.run(test_var[0][0]))
         test_var = [var for var in tf.global_variables() if 'Openpose' in var.name ]
-        logger.info('hat_var:%f' %sess.run(test_var[0]))
+        logger.info('hat_var:%f' %sess.run(test_var[0][0]))
 
         if args.checkpoint and os.path.isdir(args.checkpoint):
             logger.info('Restore from checkpoint...')
@@ -202,9 +202,9 @@ if __name__ == '__main__':
             logger.info('Restore pretrained weights...Done')
 
         test_var = [var for var in tf.global_variables() if 'efficientnet-b0/stem/' in var.name ]
-        logger.info('backbone_var:%f' %sess.run(test_var[0]))
+        logger.info('backbone_var:%f' %sess.run(test_var[0][0]))
         test_var = [var for var in tf.global_variables() if 'Openpose' in var.name ]
-        logger.info('hat_var:%f' %sess.run(test_var[0]))
+        logger.info('hat_var:%f' %sess.run(test_var[0][0]))
 
         logger.info('prepare file writer')
         file_writer = tf.summary.FileWriter(os.path.join(logpath, args.tag), sess.graph)
@@ -225,9 +225,9 @@ if __name__ == '__main__':
             curr_epoch = float(gs_num) / step_per_epoch
 
             test_var = [var for var in tf.global_variables() if 'efficientnet-b0/stem/' in var.name ]
-            logger.info('backbone_var:%f' %sess.run(test_var[0]))
+            logger.info('backbone_var:%f' %sess.run(test_var[0][0]))
             test_var = [var for var in tf.global_variables() if 'Openpose' in var.name ]
-            logger.info('hat_var:%f' %sess.run(test_var[0]))
+            logger.info('hat_var:%f' %sess.run(test_var[0][0]))
 
             if gs_num > step_per_epoch * args.max_epoch:
                 break
