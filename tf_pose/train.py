@@ -11,10 +11,10 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
-from .pose_dataset import get_dataflow_batch, DataFlowToQueue, CocoPose
-from .pose_augment import set_network_input_wh, set_network_scale
-from .common import get_sample_images
-from .networks import get_network
+from pose_dataset import get_dataflow_batch, DataFlowToQueue, CocoPose
+from pose_augment import set_network_input_wh, set_network_scale
+from common import get_sample_images
+from networks import get_network
 
 logger = logging.getLogger('train')
 logger.handlers.clear()
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     parser.add_argument('--gpus', type=int, default=1)
     parser.add_argument('--max-epoch', type=int, default=600)
     parser.add_argument('--lr', type=str, default='0.001')
-    parser.add_argument('--tag', type=str, default='eff0710')
+    parser.add_argument('--tag', type=str, default='eff0.5')
     parser.add_argument('--checkpoint', type=str, default='')
 
     parser.add_argument('--input-width', type=int, default=384)
@@ -142,6 +142,7 @@ if __name__ == '__main__':
     # optimizer = tf.train.MomentumOptimizer(learning_rate, momentum=0.8, use_locking=True, use_nesterov=True)
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     var_list = {v.op.name: v for v in tf.global_variables() if 'efficientnet-b0' not in v.op.name}
+    logger.info(var_list)
     with tf.control_dependencies(update_ops):
         train_op = optimizer.minimize(total_loss, global_step, colocate_gradients_with_ops=True, var_list=var_list)
     logger.info('define model-')
