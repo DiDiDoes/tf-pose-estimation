@@ -26,8 +26,8 @@ import numpy as np
 import six
 import tensorflow.compat.v1 as tf
 
-from tf_pose.efficientnet import efficientnet_model
-from tf_pose.efficientnet import utils
+from . import efficientnet_model
+from . import utils
 MEAN_RGB = [0.485 * 255, 0.456 * 255, 0.406 * 255]
 STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
 

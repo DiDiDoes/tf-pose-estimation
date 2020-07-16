@@ -7,8 +7,8 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-from tf_pose.common import to_str
-from tf_pose import common
+from common import to_str
+import common
 
 DEFAULT_PADDING = 'SAME'
 

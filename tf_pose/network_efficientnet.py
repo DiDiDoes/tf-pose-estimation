@@ -2,9 +2,9 @@ from __future__ import absolute_import
 
 import tensorflow as tf
 
-from tf_pose import network_base
-from tf_pose.efficientnet import efficientnet_builder
-from tf_pose.network_base import layer
+import network_base
+from efficientnet import efficientnet_builder
+from network_base import layer
 
 import tensorflow.contrib.slim as slim
 
@@ -17,7 +17,7 @@ class EfficientnetNetwork(network_base.BaseNetwork):
 
     @layer
     def base(self, input, name):
-        net, endpoints = efficientnet_builder.build_model(input, name, False)
+        net, endpoints = efficientnet_builder.build_model(input, name, training=False)
         for k, tensor in sorted(list(endpoints.items()), key=lambda x: x[0]):
             self.layers['%s/%s' % (name, k)] = tensor
             print(k, tensor.shape)
@@ -111,26 +111,9 @@ class EfficientnetNetwork(network_base.BaseNetwork):
         return vs
 
 if __name__ == '__main__':
-    sess = tf.Session()
     input = tf.placeholder(tf.float32, shape=(None, 384, 384, 3), name='image')
     network = EfficientnetNetwork({'image': input})
 
-    # writer = tf.summary.FileWriter('./log/', graph=tf.get_default_graph())
-    # writer.close
-
-    # variables_to_restore = slim.get_variables_to_restore(include=['efficientnet-b0'])
-    
-    saver = tf.train.import_meta_graph('../models/train/effsmall/model_latest-166000.meta')
-    saver.restore(sess, '../models/train/effsmall/model_latest-166000')
-    
-    # Save as .pb file
-    graph_def = tf.get_default_graph().as_graph_def()
-    output_graph_def = graph_util.convert_variables_to_constants(
-        sess, 
-        graph_def, 
-        ['Openpose/concat_stage7']
-    )
-    with tf.gfile.GFile('../models/graph/efficientnet-b0/graph_opt.pb', 'wb') as fid:
-        serialized_graph = output_graph_def.SerializeToString()
-        fid.write(serialized_graph)
+    print('ready.')
+    print(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,scope='efficientnet-b0'))
 

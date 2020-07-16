@@ -11,10 +11,10 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
-from pose_dataset import get_dataflow_batch, DataFlowToQueue, CocoPose
-from pose_augment import set_network_input_wh, set_network_scale
-from common import get_sample_images
-from networks import get_network
+from .pose_dataset import get_dataflow_batch, DataFlowToQueue, CocoPose
+from .pose_augment import set_network_input_wh, set_network_scale
+from .common import get_sample_images
+from .networks import get_network
 
 logger = logging.getLogger('train')
 logger.handlers.clear()
@@ -141,8 +141,9 @@ if __name__ == '__main__':
     optimizer = tf.train.AdamOptimizer(learning_rate, epsilon=1e-8)
     # optimizer = tf.train.MomentumOptimizer(learning_rate, momentum=0.8, use_locking=True, use_nesterov=True)
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    var_list = {v.op.name: v for v in tf.global_variables() if 'efficientnet-b0' not in v.op.name}
     with tf.control_dependencies(update_ops):
-        train_op = optimizer.minimize(total_loss, global_step, colocate_gradients_with_ops=True)
+        train_op = optimizer.minimize(total_loss, global_step, colocate_gradients_with_ops=True, var_list=var_list)
     logger.info('define model-')
 
     # define summary
