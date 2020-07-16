@@ -142,7 +142,7 @@ if __name__ == '__main__':
     # optimizer = tf.train.MomentumOptimizer(learning_rate, momentum=0.8, use_locking=True, use_nesterov=True)
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     var_list = {v.op.name: v for v in tf.global_variables() if 'efficientnet-b0' not in v.op.name}
-    logger.info(var_list)
+    # logger.info(var_list)
     with tf.control_dependencies(update_ops):
         train_op = optimizer.minimize(total_loss, global_step, colocate_gradients_with_ops=True, var_list=var_list)
     logger.info('define model-')
@@ -176,6 +176,9 @@ if __name__ == '__main__':
         logger.info('model weights initialization')
         sess.run(tf.global_variables_initializer())
 
+        test_var = [var for var in tf.global_variables() if 'efficientnet-b0/stem/' in var.name ]
+        logger.info('test_var:%f' %test_var[0])
+
         if args.checkpoint and os.path.isdir(args.checkpoint):
             logger.info('Restore from checkpoint...')
             # loader = tf.train.Saver(net.restorable_variables())
@@ -196,6 +199,9 @@ if __name__ == '__main__':
                     loader.restore(sess, pretrain_path)
             logger.info('Restore pretrained weights...Done')
 
+        test_var = [var for var in tf.global_variables() if 'efficientnet-b0/stem/' in var.name ]
+        logger.info('test_var:%f' %test_var[0])
+
         logger.info('prepare file writer')
         file_writer = tf.summary.FileWriter(os.path.join(logpath, args.tag), sess.graph)
 
@@ -213,6 +219,9 @@ if __name__ == '__main__':
         while True:
             _, gs_num = sess.run([train_op, global_step])
             curr_epoch = float(gs_num) / step_per_epoch
+
+            test_var = [var for var in tf.global_variables() if 'efficientnet-b0/stem/' in var.name ]
+            logger.info('test_var:%f' %test_var[0])
 
             if gs_num > step_per_epoch * args.max_epoch:
                 break
