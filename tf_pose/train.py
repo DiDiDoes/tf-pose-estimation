@@ -31,12 +31,12 @@ if __name__ == '__main__':
     parser.add_argument('--model', default='efficientnet-b0', help='model name')
     parser.add_argument('--datapath', type=str, default='/home/ubuntu/coco/annotations')
     parser.add_argument('--imgpath', type=str, default='/home/ubuntu/coco/')
-    parser.add_argument('--batchsize', type=int, default=16)
-    parser.add_argument('--gpus', type=int, default=1)
+    parser.add_argument('--batchsize', type=int, default=128)
+    parser.add_argument('--gpus', type=int, default=8)
     parser.add_argument('--max-epoch', type=int, default=600)
     parser.add_argument('--lr', type=str, default='0.001')
     parser.add_argument('--tag', type=str, default='eff0.5')
-    parser.add_argument('--checkpoint', type=str, default='')
+    parser.add_argument('--checkpoint', type=str, default='./models/train/eff0.5/')
 
     parser.add_argument('--input-width', type=int, default=384)
     parser.add_argument('--input-height', type=int, default=384)
@@ -93,7 +93,7 @@ if __name__ == '__main__':
         with tf.device(tf.DeviceSpec(device_type="GPU", device_index=gpu_id)):
             with tf.variable_scope(tf.get_variable_scope(), reuse=(gpu_id > 0)):
                 net, pretrain_path, last_layer = get_network(args.model, q_inp_split[gpu_id])
-                if args.checkpoint:
+                if tf.train.latest_checkpoint(args.checkpoint):
                     pretrain_path = args.checkpoint
     
                 vect, heat = net.loss_last()
@@ -176,13 +176,6 @@ if __name__ == '__main__':
         logger.info('model weights initialization')
         sess.run(tf.global_variables_initializer())
 
-        test_var = [var for var in tf.global_variables() if 'efficientnet-b0/stem/' in var.name ]
-        logger.info('backbone_var:')
-        logger.info(sess.run(test_var[0][0][0][0][0]))
-        test_var = [var for var in tf.global_variables() if 'Openpose' in var.name ]
-        logger.info('hat_var:')
-        logger.info(sess.run(test_var[0][0][0][0][0]))
-
         if args.checkpoint and os.path.isdir(args.checkpoint):
             logger.info('Restore from checkpoint...')
             # loader = tf.train.Saver(net.restorable_variables())
@@ -202,13 +195,6 @@ if __name__ == '__main__':
                     loader = tf.train.Saver(net.restorable_variables())
                     loader.restore(sess, pretrain_path)
             logger.info('Restore pretrained weights...Done')
-
-        test_var = [var for var in tf.global_variables() if 'efficientnet-b0/stem/' in var.name ]
-        logger.info('backbone_var:')
-        logger.info(sess.run(test_var[0][0][0][0][0]))
-        test_var = [var for var in tf.global_variables() if 'Openpose' in var.name ]
-        logger.info('hat_var:')
-        logger.info(sess.run(test_var[0][0][0][0][0]))
         
         logger.info('prepare file writer')
         file_writer = tf.summary.FileWriter(os.path.join(logpath, args.tag), sess.graph)
@@ -227,13 +213,6 @@ if __name__ == '__main__':
         while True:
             _, gs_num = sess.run([train_op, global_step])
             curr_epoch = float(gs_num) / step_per_epoch
-
-            test_var = [var for var in tf.global_variables() if 'efficientnet-b0/stem/' in var.name ]
-            logger.info('backbone_var:')
-            logger.info(sess.run(test_var[0][0][0][0][0]))
-            test_var = [var for var in tf.global_variables() if 'Openpose' in var.name ]
-            logger.info('hat_var:')
-            logger.info(sess.run(test_var[0][0][0][0][0]))
 
             if gs_num > step_per_epoch * args.max_epoch:
                 break
