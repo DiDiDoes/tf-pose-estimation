@@ -173,15 +173,15 @@ if __name__ == '__main__':
     config.gpu_options.allow_growth = True
     
     with tf.Session(config=config) as sess:
+        logger.info('model weights initialization')
+        sess.run(tf.global_variables_initializer())
+
         test_var = [var for var in tf.global_variables() if 'efficientnet-b0/stem/' in var.name ]
         logger.info('backbone_var:')
         logger.info(sess.run(test_var[0][0]))
         test_var = [var for var in tf.global_variables() if 'Openpose' in var.name ]
         logger.info('hat_var:')
         logger.info(sess.run(test_var[0][0]))
-
-        logger.info('model weights initialization')
-        sess.run(tf.global_variables_initializer())
 
         if args.checkpoint and os.path.isdir(args.checkpoint):
             logger.info('Restore from checkpoint...')
