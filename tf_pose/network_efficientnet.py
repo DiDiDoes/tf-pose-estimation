@@ -10,7 +10,7 @@ import tensorflow.contrib.slim as slim
 
 
 class EfficientnetNetwork(network_base.BaseNetwork):
-    def __init__(self, inputs, trainable=True, conv_width=1.0, conv_width2=0.5):
+    def __init__(self, inputs, trainable=True, conv_width=1.0, conv_width2=0.3):
         self.conv_width = conv_width
         self.refine_width = conv_width2
         network_base.BaseNetwork.__init__(self, inputs, trainable)
