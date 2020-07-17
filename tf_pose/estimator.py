@@ -9,12 +9,12 @@ import tensorflow as tf
 import time
 
 import common
-from .common import CocoPart
-from .tensblur.smoother import Smoother
+from common import CocoPart
+from tensblur.smoother import Smoother
 import tensorflow.contrib.tensorrt as trt
 
 try:
-    from tf_pose.pafprocess import pafprocess
+    from pafprocess import pafprocess
 except ModuleNotFoundError as e:
     print(e)
     print('you need to build c++ library for pafprocess. See : https://github.com/ildoonet/tf-pose-estimation/tree/master/tf_pose/pafprocess')

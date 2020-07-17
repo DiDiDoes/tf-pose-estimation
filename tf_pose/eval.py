@@ -9,9 +9,9 @@ import argparse
 import json, re
 from tqdm import tqdm
 
-from .common import read_imgfile
-from .estimator import TfPoseEstimator
-from .networks import model_wh, get_graph_path
+from common import read_imgfile
+from estimator import TfPoseEstimator
+from networks import model_wh, get_graph_path
 
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     parser.add_argument('--resize-out-ratio', type=float, default=8.0, help='if provided, resize heatmaps before they are post-processed. default=8.0')
     parser.add_argument('--model', type=str, default='efficientnet-b0', help='cmu / mobilenet_thin / mobilenet_v2_large')
     parser.add_argument('--cocoyear', type=str, default='2014')
-    parser.add_argument('--coco-dir', type=str, default='/home/caochengdi/coco/')
+    parser.add_argument('--coco-dir', type=str, default='/home/ubuntu/coco/')
     parser.add_argument('--data-idx', type=int, default=-1)
     parser.add_argument('--multi-scale', type=bool, default=False)
     args = parser.parse_args()
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     else:
         keys = [keys[args.data_idx]]
     logger.info('validation %s set size=%d' % (coco_json_file, len(keys)))
-    write_json = '../etcs/%s_%s_%0.1f.json' % (args.model, args.resize, args.resize_out_ratio)
+    write_json = './etcs/%s_%s_%0.1f.json' % (args.model, args.resize, args.resize_out_ratio)
 
     logger.debug('initialization %s : %s' % (args.model, get_graph_path(args.model)))
     w, h = model_wh(args.resize)

@@ -1,7 +1,9 @@
 import tensorflow as tf
+from network_efficientnet import EfficientnetNetwork
+from tensorflow.python.framework import graph_util
 
 if __name__ == '__main__':
-    ckpt = tf.train.latest_checkpoint('../models/train/effsmall/')
+    ckpt = tf.train.latest_checkpoint('../models/train/eff0.5/')
 
     input = tf.placeholder(tf.float32, shape=(None, 384, 384, 3), name='image')
     network = EfficientnetNetwork({'image': input})
