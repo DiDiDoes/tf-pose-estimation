@@ -8,7 +8,7 @@ if __name__ == '__main__':
     input = tf.placeholder(tf.float32, shape=(None, 384, 384, 3), name='image')
     network = EfficientnetNetwork({'image': input})
 
-    saver = tf.train.Saver()
+    saver = tf.train.Saver(network.restorable_variables(only_backbone=False))
 
     with tf.Session() as sess:
         saver.restore(sess, ckpt)
