@@ -42,8 +42,8 @@ if __name__ == '__main__':
     parser.add_argument('--gpus', type=int, default=4)
     parser.add_argument('--max-epoch', type=int, default=600)
     parser.add_argument('--lr', type=str, default='0.001')
-    parser.add_argument('--tag', type=str, default='eff0.3-test')
-    parser.add_argument('--checkpoint', type=str, default='/data/models/eff0.3-test/')
+    parser.add_argument('--tag', type=str, default='eff0.3')
+    parser.add_argument('--checkpoint', type=str, default='/data/models/eff0.3/')
 
     parser.add_argument('--input-width', type=int, default=384)
     parser.add_argument('--input-height', type=int, default=384)
