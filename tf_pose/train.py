@@ -19,11 +19,18 @@ from networks import get_network
 logger = logging.getLogger('train')
 logger.handlers.clear()
 logger.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
+
+ch = logging.FileHandler('log.txt')
 ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter('[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s')
 ch.setFormatter(formatter)
+
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+console.setFormatter(formatter)
+
 logger.addHandler(ch)
+logger.addHandler(console)
 
 
 if __name__ == '__main__':
@@ -36,14 +43,14 @@ if __name__ == '__main__':
     parser.add_argument('--max-epoch', type=int, default=600)
     parser.add_argument('--lr', type=str, default='0.001')
     parser.add_argument('--tag', type=str, default='eff0.3')
-    parser.add_argument('--checkpoint', type=str, default='./models/train/eff0.3/')
+    parser.add_argument('--checkpoint', type=str, default='/data/models/eff0.3/')
 
     parser.add_argument('--input-width', type=int, default=384)
     parser.add_argument('--input-height', type=int, default=384)
     parser.add_argument('--quant-delay', type=int, default=-1)
     args = parser.parse_args()
 
-    modelpath = logpath = './models/train/'
+    modelpath = logpath = '/data/models/'
 
     if args.gpus <= 0:
         raise Exception('gpus <= 0')
@@ -168,7 +175,7 @@ if __name__ == '__main__':
     valid_loss_ll_t = tf.summary.scalar("loss_valid_lastlayer", valid_loss_ll)
     merged_validate_op = tf.summary.merge([train_img, valid_img, valid_loss_t, valid_loss_ll_t])
     
-    saver = tf.train.Saver(max_to_keep=1000)
+    saver = tf.train.Saver(max_to_keep=50)
     config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)
     config.gpu_options.allow_growth = True
     
@@ -217,7 +224,7 @@ if __name__ == '__main__':
             if gs_num > step_per_epoch * args.max_epoch:
                 break
 
-            if gs_num - last_gs_num >= 500:
+            if gs_num - last_gs_num >= 50:
                 train_loss, train_loss_ll, train_loss_ll_paf, train_loss_ll_heat, lr_val, summary = sess.run([total_loss, total_loss_ll, total_loss_ll_paf, total_loss_ll_heat, learning_rate, merged_summary_op])
 
                 # log of training loss / accuracy
@@ -229,7 +236,7 @@ if __name__ == '__main__':
                     file_writer.add_summary(summary, curr_epoch)
                     last_log_epoch1 = curr_epoch
 
-            if gs_num - last_gs_num2 >= 2000:
+            if gs_num - last_gs_num2 >= 250:
                 # save weights
                 saver.save(sess, os.path.join(modelpath, args.tag, 'model_latest'), global_step=global_step)
 
