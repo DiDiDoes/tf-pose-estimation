@@ -38,8 +38,8 @@ if __name__ == '__main__':
     parser.add_argument('--model', default='efficientnet-b0', help='model name')
     parser.add_argument('--datapath', type=str, default='/data/coco/annotations')
     parser.add_argument('--imgpath', type=str, default='/data/coco/')
-    parser.add_argument('--batchsize', type=int, default=512)
-    parser.add_argument('--gpus', type=int, default=4)
+    parser.add_argument('--batchsize', type=int, default=1024)
+    parser.add_argument('--gpus', type=int, default=8)
     parser.add_argument('--max-epoch', type=int, default=600)
     parser.add_argument('--lr', type=str, default='0.001')
     parser.add_argument('--tag', type=str, default='baseline')
@@ -148,7 +148,7 @@ if __name__ == '__main__':
     optimizer = tf.train.AdamOptimizer(learning_rate, epsilon=1e-8)
     # optimizer = tf.train.MomentumOptimizer(learning_rate, momentum=0.8, use_locking=True, use_nesterov=True)
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-    var_list = {v.op.name: v for v in tf.global_variables() if 'efficientdet-d0' not in v.op.name}
+    var_list = {v.op.name: v for v in tf.global_variables() if 'efficientnet-b0' not in v.op.name and 'resample_p6' not in v.op.name and 'fpn_cells' not in v.op.name}
     # logger.info(var_list)
     with tf.control_dependencies(update_ops):
         train_op = optimizer.minimize(total_loss, global_step, colocate_gradients_with_ops=True, var_list=var_list)
@@ -224,7 +224,7 @@ if __name__ == '__main__':
             if gs_num > step_per_epoch * args.max_epoch:
                 break
 
-            if gs_num - last_gs_num >= 50:
+            if gs_num - last_gs_num >= 25:
                 train_loss, train_loss_ll, train_loss_ll_paf, train_loss_ll_heat, lr_val, summary = sess.run([total_loss, total_loss_ll, total_loss_ll_paf, total_loss_ll_heat, learning_rate, merged_summary_op])
 
                 # log of training loss / accuracy
@@ -236,7 +236,7 @@ if __name__ == '__main__':
                     file_writer.add_summary(summary, curr_epoch)
                     last_log_epoch1 = curr_epoch
 
-            if gs_num - last_gs_num2 >= 250:
+            if gs_num - last_gs_num2 >= 200:
                 # save weights
                 saver.save(sess, os.path.join(modelpath, args.tag, 'model_latest'), global_step=global_step)
 
