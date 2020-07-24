@@ -20,7 +20,7 @@ logger = logging.getLogger('train')
 logger.handlers.clear()
 logger.setLevel(logging.DEBUG)
 
-ch = logging.FileHandler('/data/models/eff0.3-0722/log.txt')
+ch = logging.FileHandler('/data/models/baseline.txt')
 ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter('[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s')
 ch.setFormatter(formatter)
@@ -42,8 +42,8 @@ if __name__ == '__main__':
     parser.add_argument('--gpus', type=int, default=4)
     parser.add_argument('--max-epoch', type=int, default=600)
     parser.add_argument('--lr', type=str, default='0.001')
-    parser.add_argument('--tag', type=str, default='eff0.3-0722')
-    parser.add_argument('--checkpoint', type=str, default='/data/models/eff0.3-0722/')
+    parser.add_argument('--tag', type=str, default='baseline')
+    parser.add_argument('--checkpoint', type=str, default='/data/models/baseline/')
 
     parser.add_argument('--input-width', type=int, default=384)
     parser.add_argument('--input-height', type=int, default=384)
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     set_network_input_wh(args.input_width, args.input_height)
     scale = 4
 
-    if args.model in ['cmu', 'vgg'] or 'mobilenet' in args.model or 'efficientnet' in args.model:
+    if args.model in ['cmu', 'vgg'] or 'mobilenet' in args.model or 'efficientnet' in args.model or 'efficientdet' in args.model:
         scale = 8
 
     set_network_scale(scale)
@@ -148,7 +148,7 @@ if __name__ == '__main__':
     optimizer = tf.train.AdamOptimizer(learning_rate, epsilon=1e-8)
     # optimizer = tf.train.MomentumOptimizer(learning_rate, momentum=0.8, use_locking=True, use_nesterov=True)
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-    var_list = {v.op.name: v for v in tf.global_variables() if 'efficientnet-b0' not in v.op.name}
+    var_list = {v.op.name: v for v in tf.global_variables() if 'efficientdet-d0' not in v.op.name}
     # logger.info(var_list)
     with tf.control_dependencies(update_ops):
         train_op = optimizer.minimize(total_loss, global_step, colocate_gradients_with_ops=True, var_list=var_list)

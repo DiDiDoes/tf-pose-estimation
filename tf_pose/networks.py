@@ -2,6 +2,8 @@ import os
 from os.path import dirname, abspath
 
 import tensorflow as tf
+from tensorflow.python.framework import graph_util
+from tensorflow.python import pywrap_tensorflow
 
 from network_mobilenet import MobilenetNetwork
 from network_mobilenet_thin import MobilenetNetworkThin
@@ -100,6 +102,11 @@ def get_network(type, placeholder_input, sess_for_load=None, trainable=True):
         pretrain_path = 'pretrained/efficientnet-b0/model.ckpt'
         last_layer = 'Mconv7_stage6_L{aux}'
 
+    elif type == 'efficientdet-d0':
+        net = EfficientdetNetwork({'image': placeholder_input}, trainable=trainable)
+        pretrain_path = 'pretrained/efficientdet-d0/model'
+        last_layer = 'Mconv7_stage6_L{aux}'
+
     else:
         raise Exception('Invalid Model Name.')
 
@@ -143,6 +150,7 @@ def get_graph_path(model_name):
         'mobilenet_v2_large_quantize': 'graph/mobilenet_v2_large/graph_opt_q.pb',
         'mobilenet_v2_small': 'graph/mobilenet_v2_small/graph_opt.pb',
         'efficientnet-b0': 'graph/efficientnet-b0/graph_opt.pb',
+        'efficientdet-d0': 'graph/efficientdet-b0/graph_opt.pb'
     }
 
     base_data_dir = dirname(dirname(abspath(__file__)))
@@ -163,3 +171,91 @@ def model_wh(resolution_str):
     if width % 16 != 0 or height % 16 != 0:
         raise Exception('Width and height should be multiples of 16. w=%d, h=%d' % (width, height))
     return int(width), int(height)
+
+def load_pb(pb):
+    with tf.gfile.GFile(pb, "rb") as f:
+        graph_def = tf.GraphDef()
+        graph_def.ParseFromString(f.read())
+    with tf.Graph().as_default() as graph:
+        tf.import_graph_def(graph_def, name='')
+        return graph
+
+def stats_graph(graph):
+    flops = tf.profiler.profile(graph, options=tf.profiler.ProfileOptionBuilder.float_operation())
+    params = tf.profiler.profile(graph, options=tf.profiler.ProfileOptionBuilder.trainable_variables_parameter())
+    print('GFLOPs: {};    Trainable params: {}'.format(flops.total_float_ops/1000000000.0, params.total_parameters))
+    return flops, params
+
+def print_params(constant_values):
+    total = 0
+    prompt = []
+    keyword = ['efficientnet','Openpose']
+    for k,v in constant_values.items():
+        # filtering some by checking ndim and name
+        if v.ndim<1: continue
+        if v.ndim==1:
+            token = k.split(r'/')[-1]
+            flag = False
+            for word in keyword:
+                if token.find(word)==-1:
+                    flag = True
+                    break
+            if not flag:
+                continue
+
+        shape = v.shape
+        cnt = 1
+        for dim in shape:
+            cnt *= dim
+        prompt.append('{} with shape {} has {}'.format(k, shape, cnt))
+        print(prompt[-1])
+        total += cnt
+    prompt.append('totaling {}'.format(total))
+    print(prompt[-1])
+    return prompt
+
+if __name__ == '__main__':
+    input_node = tf.placeholder(tf.float32, shape=(1, 384, 384, 3), name='image')
+    net, pretrain_path_full, last_layer = get_network('mobilenet_v2_small', input_node)
+
+    pb = 'efficientnet/graph_opt.pb'
+
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+        graph = tf.get_default_graph()
+
+        print('stats before freezing')
+        flops1, params1 = stats_graph(graph)
+
+        graph_def = graph.as_graph_def()
+        '''
+        for node in node_list:
+            if 'head' in node:
+                print(node)
+        '''
+
+        output_graph_def = graph_util.convert_variables_to_constants(
+                sess,
+                graph_def,
+                ['Openpose/concat_stage7']
+                )
+
+        with tf.gfile.GFile(pb, 'wb') as fid:
+            serialized_graph = output_graph_def.SerializeToString()
+            fid.write(serialized_graph)
+
+        g2 = load_pb(pb)
+        g2.as_default()
+        print('stats after freezing')
+        flops2, params2 = stats_graph(g2)
+        '''
+        constant_values = {}
+        constant_ops = [op for op in sess.graph.get_operations() if op.type == "Const"]
+        for constant_op in constant_ops:
+            constant_values[constant_op.name] = sess.run(constant_op.outputs[0])
+        '''
+
+
+    print('GFLOPs: {};    Trainable params: {}'.format(flops1.total_float_ops/1000000000.0, params1.total_parameters))
+    print('GFLOPs: {};    Trainable params: {}'.format(flops2.total_float_ops/1000000000.0, params2.total_parameters))
+    # print_params(constant_values)
