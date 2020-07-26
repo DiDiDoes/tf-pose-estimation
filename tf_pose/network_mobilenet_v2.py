@@ -6,6 +6,8 @@ import network_base
 from mobilenet import mobilenet_v2
 from network_base import layer
 
+from tensorflow.python.framework import graph_util
+
 
 class Mobilenetv2Network(network_base.BaseNetwork):
     def __init__(self, inputs, trainable=True, conv_width=1.0, conv_width2=1.0):
@@ -108,3 +110,22 @@ class Mobilenetv2Network(network_base.BaseNetwork):
               }
         # print(set([v.op.name for v in tf.global_variables()]) - set(list(vs.keys())))
         return vs
+
+if __name__ == '__main__':
+    input = tf.placeholder(tf.float32, shape=(None, 384, 384, 3), name='image')
+    network = Mobilenetv2Network({'image': input}, conv_width=0.5, conv_width2=0.5)
+
+    saver = tf.train.Saver()
+
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+        graph_def = tf.get_default_graph().as_graph_def()
+        output_graph_def = graph_util.convert_variables_to_constants(
+                sess,
+                graph_def,
+                ['Openpose/concat_stage7']
+                )
+
+        with tf.gfile.GFile('mobilenetv2-small.pb', 'wb') as fid:
+            serialized_graph = output_graph_def.SerializeToString()
+            fid.write(serialized_graph)

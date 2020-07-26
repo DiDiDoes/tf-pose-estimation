@@ -115,5 +115,7 @@ if __name__ == '__main__':
     network = EfficientnetNetwork({'image': input})
 
     print('ready.')
-    print(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,scope='efficientnet-b0'))
+    print(len(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,scope='efficientnet-b0')))
+    print('sep')
+    print(len(network.restorable_variables(only_backbone=True)))
 
