@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import network_base
 import tensorflow as tf
 
+from tensorflow.python.framework import graph_util
 
 class CmuNetwork(network_base.BaseNetwork):
     def setup(self):
@@ -163,3 +164,4 @@ class CmuNetwork(network_base.BaseNetwork):
 
     def restorable_variables(self):
          return None
+

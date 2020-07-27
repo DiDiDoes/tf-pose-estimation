@@ -187,7 +187,7 @@ def get_ckpt_var_map_ema(ckpt_path, ckpt_scope, var_scope, var_exclude_expr):
   return var_map
 
 
-class TpuBatchNormalization(tf.keras.layers.BatchNormalization):
+class TpuBatchNormalization(tf.keras.layers.BatchNormalization, tf.layers.Layer):
   """Cross replica batch normalization."""
 
   def __init__(self, fused=False, **kwargs):
@@ -242,7 +242,7 @@ class TpuBatchNormalization(tf.keras.layers.BatchNormalization):
     return outputs
 
 
-class SyncBatchNormalization(tf.keras.layers.BatchNormalization):
+class SyncBatchNormalization(tf.keras.layers.BatchNormalization, tf.layers.Layer):
   """Cross replica batch normalization."""
 
   def __init__(self, fused=False, sync=False, **kwargs):
@@ -279,7 +279,7 @@ class SyncBatchNormalization(tf.keras.layers.BatchNormalization):
     return outputs
 
 
-class BatchNormalization(tf.keras.layers.BatchNormalization):
+class BatchNormalization(tf.keras.layers.BatchNormalization, tf.layers.Layer):
   """Fixed default name of BatchNormalization to match TpuBatchNormalization."""
 
   def __init__(self, **kwargs):

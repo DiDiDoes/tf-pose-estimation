@@ -1,6 +1,8 @@
 import os
 from os.path import dirname, abspath
 
+import argparse
+
 import tensorflow as tf
 from tensorflow.python.framework import graph_util
 from tensorflow.python import pywrap_tensorflow
@@ -11,6 +13,7 @@ from network_mobilenet_thin import MobilenetNetworkThin
 from network_cmu import CmuNetwork
 from network_mobilenet_v2 import Mobilenetv2Network
 from network_efficientnet import EfficientnetNetwork
+from network_efficientdet import EfficientdetNetwork
 
 
 def _get_base_path():
@@ -144,13 +147,13 @@ def get_graph_path(model_name):
     dyn_graph_path = {
         'cmu': 'graph/cmu/graph_opt.pb',
         'openpose_quantize': 'graph/cmu/graph_opt_q.pb',
-        'mobilenet_thin': 'graph/mobilenet_thin/graph_opt.pb',
+        'mobilenet_thin': '/data/models/thin.pb',
         'mobilenet_v2_large': 'graph/mobilenet_v2_large/graph_opt.pb',
         'mobilenet_v2_large_r0.5': 'graph/mobilenet_v2_large/graph_r0.5_opt.pb',
         'mobilenet_v2_large_quantize': 'graph/mobilenet_v2_large/graph_opt_q.pb',
         'mobilenet_v2_small': 'graph/mobilenet_v2_small/graph_opt.pb',
-        'efficientnet-b0': 'graph/efficientnet-b0/graph_opt.pb',
-        'efficientdet-d0': 'graph/efficientdet-b0/graph_opt.pb'
+        'efficientnet-b0': '/data/models/backbone.pb',
+        'efficientdet-d0': '/data/models/baseline.pb'
     }
 
     base_data_dir = dirname(dirname(abspath(__file__)))
@@ -215,24 +218,37 @@ def print_params(constant_values):
     return prompt
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Training codes for Openpose using Tensorflow')
+    parser.add_argument('--model', default='efficientdet-d0', help='model name')
+    parser.add_argument('--graph', default='efficientdet-d0', help='graph name')
+    args = parser.parse_args()
+    
+    print('Creating model: ', args.model)
     input_node = tf.placeholder(tf.float32, shape=(1, 384, 384, 3), name='image')
-    net, pretrain_path_full, last_layer = get_network('mobilenet_v2_small', input_node)
+    net, pretrain_path, last_layer = get_network(args.model, input_node)
 
-    pb = 'efficientnet/graph_opt.pb'
+    pb = args.graph + '.pb'
 
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
+
+        try:
+            print('Restore all weights.')
+            loader = tf.train.Saver(net.restorable_variables(only_backbone=False))
+            loader.restore(sess, pretrain_path)
+            print('Restore all weights...Done')
+        except:
+            print('Restore only weights in backbone layers.')
+            loader = tf.train.Saver(net.restorable_variables())
+            loader.restore(sess, pretrain_path)
+            print('Restore pretrained weights...Done')
+
         graph = tf.get_default_graph()
 
         print('stats before freezing')
         flops1, params1 = stats_graph(graph)
 
         graph_def = graph.as_graph_def()
-        '''
-        for node in node_list:
-            if 'head' in node:
-                print(node)
-        '''
 
         output_graph_def = graph_util.convert_variables_to_constants(
                 sess,
@@ -248,14 +264,5 @@ if __name__ == '__main__':
         g2.as_default()
         print('stats after freezing')
         flops2, params2 = stats_graph(g2)
-        '''
-        constant_values = {}
-        constant_ops = [op for op in sess.graph.get_operations() if op.type == "Const"]
-        for constant_op in constant_ops:
-            constant_values[constant_op.name] = sess.run(constant_op.outputs[0])
-        '''
-
-
-    print('GFLOPs: {};    Trainable params: {}'.format(flops1.total_float_ops/1000000000.0, params1.total_parameters))
-    print('GFLOPs: {};    Trainable params: {}'.format(flops2.total_float_ops/1000000000.0, params2.total_parameters))
-    # print_params(constant_values)
+        
+        print('graph saved to ', pb)

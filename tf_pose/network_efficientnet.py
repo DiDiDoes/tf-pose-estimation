@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import tensorflow as tf
+import numpy as np
 
 import network_base
 from efficientnet import efficientnet_builder
@@ -111,11 +112,19 @@ class EfficientnetNetwork(network_base.BaseNetwork):
         return vs
 
 if __name__ == '__main__':
-    input = tf.placeholder(tf.float32, shape=(None, 384, 384, 3), name='image')
-    network = EfficientnetNetwork({'image': input})
+    input1 = tf.placeholder(tf.float32, shape=(1, 384, 384, 3), name='image')
+    input2 = tf.placeholder(tf.float32, shape=(1, 384, 384, 3), name='image')
 
-    print('ready.')
-    print(len(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,scope='efficientnet-b0')))
-    print('sep')
-    print(len(network.restorable_variables(only_backbone=True)))
+    with tf.variable_scope(tf.get_variable_scope(), reuse=False):
+        network1 = EfficientnetNetwork({'image': input1})
+
+    num_params = np.sum([np.prod(v.shape) for v in tf.trainable_variables()])
+    print(num_params)
+
+    with tf.variable_scope(tf.get_variable_scope(), reuse=True):
+        network2 = EfficientnetNetwork({'image': input2})
+
+    num_params = np.sum([np.prod(v.shape) for v in tf.trainable_variables()])
+    print(num_params)
+
 

@@ -516,7 +516,7 @@ def build_bifpn_layer(feats, feat_sizes, config):
   num_output_connections = [0 for _ in feats]
   for i, fnode in enumerate(fpn_config.nodes):
     with tf.variable_scope('fnode{}'.format(i)):
-      print('fnode %d : %s', i, fnode)
+      # print('fnode %d : %s', i, fnode)
       new_node_height = feat_sizes[fnode['feat_level']]['height']
       new_node_width = feat_sizes[fnode['feat_level']]['width']
       nodes = []
@@ -586,7 +586,7 @@ def efficientdet(features, model_name=None, config=None, **kwargs):
   if kwargs:
     config.override(kwargs)
 
-  print(config)
+  # print(config)
 
   # build backbone features.
   features = build_backbone(features, config)
