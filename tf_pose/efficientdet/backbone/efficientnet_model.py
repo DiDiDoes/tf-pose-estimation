@@ -152,6 +152,18 @@ def round_repeats(repeats, global_params, skip=False):
   return int(math.ceil(multiplier * repeats))
 
 
+class Conv2D(tf.keras.layers.Conv2D, tf.layers.Layer):
+  """Wrap keras Conv2D to tf.layers."""
+
+  pass
+
+
+class DepthwiseConv2D(tf.keras.layers.DepthwiseConv2D, tf.layers.Layer):
+  """Wrap keras DepthwiseConv2D to tf.layers."""
+
+  pass
+
+
 class SE(tf.keras.layers.Layer):
   """Squeeze-and-excitation layer."""
 
@@ -163,7 +175,7 @@ class SE(tf.keras.layers.Layer):
     self._relu_fn = global_params.relu_fn or tf.nn.swish
 
     # Squeeze and Excitation layer.
-    self._se_reduce = tf.keras.layers.Conv2D(
+    self._se_reduce = Conv2D(
         se_filters,
         kernel_size=[1, 1],
         strides=[1, 1],
@@ -172,7 +184,7 @@ class SE(tf.keras.layers.Layer):
         data_format=self._data_format,
         use_bias=True,
         name='conv2d')
-    self._se_expand = tf.keras.layers.Conv2D(
+    self._se_expand = Conv2D(
         output_filters,
         kernel_size=[1, 1],
         strides=[1, 1],
@@ -202,7 +214,7 @@ class SuperPixel(tf.keras.layers.Layer):
 
   def __init__(self, block_args, global_params, name=None):
     super().__init__(name=name)
-    self._superpixel = tf.keras.layers.Conv2D(
+    self._superpixel = Conv2D(
         block_args.input_filters,
         kernel_size=[2, 2],
         strides=[2, 2],
@@ -290,7 +302,7 @@ class MBConvBlock(tf.keras.layers.Layer):
 
     if self._block_args.fused_conv:
       # Fused expansion phase. Called if using fused convolutions.
-      self._fused_conv = tf.keras.layers.Conv2D(
+      self._fused_conv = Conv2D(
           filters=filters,
           kernel_size=[kernel_size, kernel_size],
           strides=self._block_args.strides,
@@ -303,7 +315,7 @@ class MBConvBlock(tf.keras.layers.Layer):
       # Expansion phase. Called if not using fused convolutions and expansion
       # phase is necessary.
       if self._block_args.expand_ratio != 1:
-        self._expand_conv = tf.keras.layers.Conv2D(
+        self._expand_conv = Conv2D(
             filters=filters,
             kernel_size=[1, 1],
             strides=[1, 1],
@@ -319,7 +331,7 @@ class MBConvBlock(tf.keras.layers.Layer):
             name=get_bn_name())
 
       # Depth-wise convolution phase. Called if not using fused convolutions.
-      self._depthwise_conv = tf.keras.layers.DepthwiseConv2D(
+      self._depthwise_conv = DepthwiseConv2D(
           kernel_size=[kernel_size, kernel_size],
           strides=self._block_args.strides,
           depthwise_initializer=conv_kernel_initializer,
@@ -344,7 +356,7 @@ class MBConvBlock(tf.keras.layers.Layer):
 
     # Output phase.
     filters = self._block_args.output_filters
-    self._project_conv = tf.keras.layers.Conv2D(
+    self._project_conv = Conv2D(
         filters=filters,
         kernel_size=[1, 1],
         strides=[1, 1],
@@ -422,7 +434,7 @@ class MBConvBlockWithoutDepthwise(MBConvBlock):
     filters = self._block_args.input_filters * self._block_args.expand_ratio
     if self._block_args.expand_ratio != 1:
       # Expansion phase:
-      self._expand_conv = tf.keras.layers.Conv2D(
+      self._expand_conv = Conv2D(
           filters,
           kernel_size=[3, 3],
           strides=[1, 1],
@@ -436,7 +448,7 @@ class MBConvBlockWithoutDepthwise(MBConvBlock):
 
     # Output phase:
     filters = self._block_args.output_filters
-    self._project_conv = tf.keras.layers.Conv2D(
+    self._project_conv = Conv2D(
         filters,
         kernel_size=[1, 1],
         strides=self._block_args.strides,
@@ -492,7 +504,7 @@ class Stem(tf.keras.layers.Layer):
 
   def __init__(self, global_params, stem_filters, name=None):
     super().__init__(name=name)
-    self._conv_stem = tf.keras.layers.Conv2D(
+    self._conv_stem = Conv2D(
         filters=round_filters(stem_filters, global_params,
                               global_params.fix_head_stem),
         kernel_size=[3, 3],
@@ -520,7 +532,7 @@ class Head(tf.keras.layers.Layer):
     self.endpoints = {}
     self._global_params = global_params
 
-    self._conv_head = tf.keras.layers.Conv2D(
+    self._conv_head = Conv2D(
         filters=round_filters(1280, global_params, global_params.fix_head_stem),
         kernel_size=[1, 1],
         strides=[1, 1],

@@ -391,7 +391,7 @@ def num_params_flops(readable_format=True):
   flops = tf.profiler.profile(
       tf.get_default_graph(), options=options).total_float_ops
   # We use flops to denote multiply-adds, which is counted as 2 ops in tfprof.
-  flops = flops // 2
+  # flops = flops // 2
   if readable_format:
     nparams = float(nparams) * 1e-6
     flops = float(flops) * 1e-9

@@ -466,10 +466,12 @@ def fuse_features(nodes, weight_method):
     nodes = tf.stack(nodes, axis=-1)
     new_node = tf.reduce_sum(nodes * normalized_weights, -1)
   elif weight_method == 'fastattn':
-    edge_weights = [
-        tf.nn.relu(tf.cast(tf.Variable(1.0, name='WSM'), dtype=dtype))
-        for _ in nodes
-    ]
+    edge_weights = []
+    for index in range(len(nodes)):
+      if index == 0:
+        edge_weights.append(tf.nn.relu(tf.cast(tf.get_variable(initializer=1.0, name='WSM'), dtype=dtype)))
+      else:
+        edge_weights.append(tf.nn.relu(tf.cast(tf.get_variable(initializer=1.0, name='WSM_%d' %index), dtype=dtype)))
     weights_sum = tf.add_n(edge_weights)
     nodes = [nodes[i] * edge_weights[i] / (weights_sum + 0.0001)
              for i in range(len(nodes))]
@@ -515,7 +517,7 @@ def build_bifpn_layer(feats, feat_sizes, config):
 
   num_output_connections = [0 for _ in feats]
   for i, fnode in enumerate(fpn_config.nodes):
-    with tf.variable_scope('fnode{}'.format(i)):
+    with tf.variable_scope('fnode{}'.format(i), reuse=tf.AUTO_REUSE):
       # print('fnode %d : %s', i, fnode)
       new_node_height = feat_sizes[fnode['feat_level']]['height']
       new_node_width = feat_sizes[fnode['feat_level']]['width']
