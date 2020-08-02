@@ -127,4 +127,7 @@ if __name__ == '__main__':
     num_params = np.sum([np.prod(v.shape) for v in tf.trainable_variables()])
     print(num_params)
 
+    all_var = [t.name for t in tf.global_variables()]
+    print(all_var)
+
 

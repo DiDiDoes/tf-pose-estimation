@@ -387,7 +387,8 @@ class MBConvBlock(tf.keras.layers.Layer):
 
     # creates conv 2x2 kernel
     if self.super_pixel:
-      x = self.super_pixel(x, training)
+      with tf.variable_scope('super_pixel'):
+        x = self.super_pixel(x, training)
       logging.info('SuperPixel %s: %s', self.name, x.shape)
 
     if self._block_args.fused_conv:
@@ -404,7 +405,8 @@ class MBConvBlock(tf.keras.layers.Layer):
       logging.info('DWConv shape: %s', x.shape)
 
     if self._se:
-      x = self._se(x)
+      with tf.variable_scope('se'):
+        x = self._se(x)
 
     self.endpoints = {'expansion_output': x}
 
@@ -726,7 +728,8 @@ class Model(tf.keras.Model):
     reduction_idx = 0
 
     # Calls Stem layers
-    outputs = self._stem(inputs, training)
+    with tf.variable_scope('stem'):
+      outputs = self._stem(inputs, training)
     logging.info('Built stem %s : %s', self._stem.name, outputs.shape)
     self.endpoints['stem'] = outputs
 
@@ -744,25 +747,27 @@ class Model(tf.keras.Model):
         is_reduction = True
         reduction_idx += 1
 
-      survival_prob = self._global_params.survival_prob
-      if survival_prob:
-        drop_rate = 1.0 - survival_prob
-        survival_prob = 1.0 - drop_rate * float(idx) / len(self._blocks)
-        logging.info('block_%s survival_prob: %s', idx, survival_prob)
-      outputs = block(outputs, training=training, survival_prob=survival_prob)
-      self.endpoints['block_%s' % idx] = outputs
-      if is_reduction:
-        self.endpoints['reduction_%s' % reduction_idx] = outputs
-      if block.endpoints:
-        for k, v in six.iteritems(block.endpoints):
-          self.endpoints['block_%s/%s' % (idx, k)] = v
-          if is_reduction:
-            self.endpoints['reduction_%s/%s' % (reduction_idx, k)] = v
+      with tf.variable_scope('blocks_%s' % idx):
+        survival_prob = self._global_params.survival_prob
+        if survival_prob:
+          drop_rate = 1.0 - survival_prob
+          survival_prob = 1.0 - drop_rate * float(idx) / len(self._blocks)
+          logging.info('block_%s survival_prob: %s', idx, survival_prob)
+        outputs = block(outputs, training=training, survival_prob=survival_prob)
+        self.endpoints['block_%s' % idx] = outputs
+        if is_reduction:
+          self.endpoints['reduction_%s' % reduction_idx] = outputs
+        if block.endpoints:
+          for k, v in six.iteritems(block.endpoints):
+            self.endpoints['block_%s/%s' % (idx, k)] = v
+            if is_reduction:
+              self.endpoints['reduction_%s/%s' % (reduction_idx, k)] = v
     self.endpoints['features'] = outputs
 
     if not features_only:
       # Calls final layers and returns logits.
-      outputs = self._head(outputs, training, pooled_features_only)
+      with tf.variable_scope('head'):
+        outputs = self._head(outputs, training, pooled_features_only)
       self.endpoints.update(self._head.endpoints)
 
     return outputs

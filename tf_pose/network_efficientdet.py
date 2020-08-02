@@ -108,7 +108,7 @@ class EfficientdetNetwork(network_base.BaseNetwork):
 
     def restorable_variables(self, only_backbone=True):
         vs = {v.op.name: v for v in tf.global_variables() if
-              ('efficientnet-b0' in v.op.name or 'resample_p6' in v.op.name or 'resample_p7' in v.op.name or
+              ('efficientnet-b0' in v.op.name or 'resample_p6' in v.op.name or
                'fpn_cells' in v.op.name or (only_backbone is False and 'Openpose' in v.op.name)) and
               # 'global_step' not in v.op.name and
               # 'beta1_power' not in v.op.name and 'beta2_power' not in v.op.name and
@@ -117,6 +117,10 @@ class EfficientdetNetwork(network_base.BaseNetwork):
               'Ada' not in v.op.name and 'Adam' not in v.op.name
               }
         # print(set([v.op.name for v in tf.global_variables()]) - set(list(vs.keys())))
+        # print(vs.keys())
+        print(len(tf.global_variables()))
+        print(len(vs))
+        print(len([v.op.name for v in tf.global_variables() if 'Openpose' in v.op.name]))
         return vs
 
 if __name__ == '__main__':
@@ -126,13 +130,22 @@ if __name__ == '__main__':
     with tf.variable_scope(tf.get_variable_scope(), reuse=False):
         network1 = EfficientdetNetwork({'image': input1})
 
-    num_params = np.sum([np.prod(v.shape) for v in tf.trainable_variables()])
+    list1 = tf.trainable_variables()
+    num_params = np.sum([np.prod(v.shape) for v in list1])
     print(num_params)
-
 
     with tf.variable_scope(tf.get_variable_scope(), reuse=tf.AUTO_REUSE):
         network2 = EfficientdetNetwork({'image': input1})
 
-    num_params = np.sum([np.prod(v.shape) for v in tf.trainable_variables()])
+    list2 = tf.trainable_variables()
+    num_params = np.sum([np.prod(v.shape) for v in list2])
     print(num_params)
+
+    print(set(list2) - set(list1))
+
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+        loader = tf.train.Saver(network2.restorable_variables())
+        loader.restore(sess, './models/pretrained/efficientdet-d0/model')
+    
 
