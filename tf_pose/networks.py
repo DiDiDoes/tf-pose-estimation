@@ -147,7 +147,8 @@ def get_graph_path(model_name):
     dyn_graph_path = {
         'cmu': 'graph/cmu/graph_opt.pb',
         'openpose_quantize': 'graph/cmu/graph_opt_q.pb',
-        'mobilenet_thin': '/data/models/thin.pb',
+        'mobilenet_thin': 'graph/mobilenet_thin/graph_opt.pb',
+        'mobilenet_0.5': 'pretrained/mobilenet_v1_0.50_224_2017_06_14/mobilenet_v1_0.50_224.ckpt',
         'mobilenet_v2_large': 'graph/mobilenet_v2_large/graph_opt.pb',
         'mobilenet_v2_large_r0.5': 'graph/mobilenet_v2_large/graph_r0.5_opt.pb',
         'mobilenet_v2_large_quantize': 'graph/mobilenet_v2_large/graph_opt_q.pb',
@@ -163,6 +164,7 @@ def get_graph_path(model_name):
         base_data_dir = os.path.join(base_data_dir, 'tf_pose_data')
 
     graph_path = os.path.join(base_data_dir, dyn_graph_path[model_name])
+    return graph_path
     if os.path.isfile(graph_path):
         return graph_path
 

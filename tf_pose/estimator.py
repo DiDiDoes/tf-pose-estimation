@@ -307,10 +307,24 @@ class TfPoseEstimator:
         self.target_size = target_size
 
         # load graph
-        logger.info('loading graph from %s(default size=%dx%d)' % (graph_path, target_size[0], target_size[1]))
-        with tf.gfile.GFile(graph_path, 'rb') as f:
-            graph_def = tf.GraphDef()
-            graph_def.ParseFromString(f.read())
+        print(graph_path[-2:])
+        if graph_path[-2:-1] == 'pb':
+            logger.info('loading graph from %s(default size=%dx%d)' % (graph_path, target_size[0], target_size[1]))
+        
+            with tf.gfile.GFile(graph_path, 'rb') as f:
+                graph_def = tf.GraphDef()
+                graph_def.ParseFromString(f.read())
+        
+        else:
+            loader = tf.train.import_meta_graph(graph_path + '.meta')
+            with tf.Session() as sess:
+                loader.restore(sess, graph_path)
+            graph_def = tf.get_default_graph().as_graph_def()
+            graph_def = graph_util.convert_variables_to_constants(
+                    sess,
+                    graph_def,
+                    ['Openpose/concat_stage7']
+                    )
 
         if trt_bool is True:
             output_nodes = ["Openpose/concat_stage7"]
