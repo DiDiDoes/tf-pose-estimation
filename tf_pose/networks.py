@@ -107,13 +107,13 @@ def get_network(type, placeholder_input, sess_for_load=None, trainable=True):
 
     elif type == 'efficientdet-d0':
         net = EfficientdetNetwork({'image': placeholder_input}, trainable=trainable)
-        pretrain_path = 'pretrained/efficientdet-d0/model'
+        pretrain_path_full = '/data/models/baseline-spot4m/model_latest-62003'
         last_layer = 'Mconv7_stage6_L{aux}'
 
     else:
         raise Exception('Invalid Model Name.')
 
-    pretrain_path_full = os.path.join(_get_base_path(), pretrain_path)
+    # pretrain_path_full = os.path.join(_get_base_path(), pretrain_path)
     if sess_for_load is not None:
         if type in ['cmu', 'vgg', 'openpose']:
             if not os.path.isfile(pretrain_path_full):
