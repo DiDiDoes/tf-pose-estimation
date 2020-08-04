@@ -38,7 +38,7 @@ if __name__ == '__main__':
     parser.add_argument('--model', default='efficientdet-d0', help='model name')
     parser.add_argument('--datapath', type=str, default='/data/coco/annotations')
     parser.add_argument('--imgpath', type=str, default='/data/coco/')
-    parser.add_argument('--batchsize', type=int, default=128)
+    parser.add_argument('--batchsize', type=int, default=96)
     parser.add_argument('--gpus', type=int, default=4)
     parser.add_argument('--max-epoch', type=int, default=100)
     parser.add_argument('--lr', type=str, default='0.001')
