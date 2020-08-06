@@ -308,7 +308,7 @@ class TfPoseEstimator:
 
         # load graph
         print(graph_path[-2:])
-        if graph_path[-2:-1] == 'pb':
+        if graph_path[-2:] == 'pb':
             logger.info('loading graph from %s(default size=%dx%d)' % (graph_path, target_size[0], target_size[1]))
         
             with tf.gfile.GFile(graph_path, 'rb') as f:
@@ -348,7 +348,7 @@ class TfPoseEstimator:
         for ts in [n.name for n in tf.get_default_graph().as_graph_def().node]:
             print(ts)
 
-        self.tensor_image = self.graph.get_tensor_by_name('TfPoseEstimator/image:0')
+        self.tensor_image = self.graph.get_tensor_by_name('TfPoseEstimator/split:0')
         self.tensor_output = self.graph.get_tensor_by_name('TfPoseEstimator/Openpose/concat_stage7:0')
         self.tensor_heatMat = self.tensor_output[:, :, :, :19]
         self.tensor_pafMat = self.tensor_output[:, :, :, 19:]

@@ -154,7 +154,7 @@ def get_graph_path(model_name):
         'mobilenet_v2_large_quantize': 'graph/mobilenet_v2_large/graph_opt_q.pb',
         'mobilenet_v2_small': 'graph/mobilenet_v2_small/graph_opt.pb',
         'efficientnet-b0': '/data/models/backbone.pb',
-        'efficientdet-d0': '/data/models/baseline.pb'
+        'efficientdet-d0': '/data/models/baseline-spot4m.pb'
     }
 
     base_data_dir = dirname(dirname(abspath(__file__)))

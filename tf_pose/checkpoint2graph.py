@@ -11,13 +11,15 @@ def ckpt_tensors(ckpt):
 
 
 if __name__ == '__main__':
-    # ckpt = './models/pretrained/efficientdet-d0/model'
+    # ckpt = '/data/models/baseline-spot4f/model_latest-'
     ckpt = tf.train.latest_checkpoint('/data/models/baseline-spot4m/')
     # ckpt_tensors(ckpt)
 
     saver = tf.train.import_meta_graph(ckpt + '.meta')
 
-    with tf.Session() as sess:
+    config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)
+    config.gpu_options.allow_growth = True
+    with tf.Session(config = config) as sess:
         saver.restore(sess, ckpt)
 
         graph_def = tf.get_default_graph().as_graph_def()
