@@ -7,13 +7,15 @@ def ckpt_tensors(ckpt):
     reader = pywrap_tensorflow.NewCheckpointReader(ckpt)
     var_to_shape_map = reader.get_variable_to_shape_map()
     for key in var_to_shape_map:
-        print("tensor_name: ", key)
+        if "box_net" in key:
+            print("tensor_name: ", key)
 
 
 if __name__ == '__main__':
     # ckpt = '/data/models/baseline-spot4f/model_latest-'
-    ckpt = tf.train.latest_checkpoint('/data/models/baseline-spot4m/')
-    # ckpt_tensors(ckpt)
+    ckpt = './models/pretrained/efficientdet-d0/model'
+    #ckpt = tf.train.latest_checkpoint('/data/models/baseline-spot4m/')
+    ckpt_tensors(ckpt)
 
     saver = tf.train.import_meta_graph(ckpt + '.meta')
 
@@ -22,7 +24,10 @@ if __name__ == '__main__':
     with tf.Session(config = config) as sess:
         saver.restore(sess, ckpt)
 
-        graph_def = tf.get_default_graph().as_graph_def()
+        graph = tf.get_default_graph()
+        graph_def = graph.as_graph_def()
+        summary_write = tf.summary.FileWriter("./" , graph)
+        summary_write.close()
         output_graph_def = graph_util.convert_variables_to_constants(
                 sess,
                 graph_def,

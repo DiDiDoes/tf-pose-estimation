@@ -107,7 +107,7 @@ def get_network(type, placeholder_input, sess_for_load=None, trainable=True):
 
     elif type == 'efficientdet-d0':
         net = EfficientdetNetwork({'image': placeholder_input}, trainable=trainable)
-        pretrain_path_full = '/data/models/baseline-spot4m/model_latest-62003'
+        pretrain_path_full = '/data/models/baseline-spot4f/model_latest-128003'
         last_layer = 'Mconv7_stage6_L{aux}'
 
     else:

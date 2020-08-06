@@ -12,6 +12,7 @@ import common
 from common import CocoPart
 from tensblur.smoother import Smoother
 import tensorflow.contrib.tensorrt as trt
+from tensorflow.python.framework import graph_util
 
 try:
     from pafprocess import pafprocess
