@@ -349,10 +349,10 @@ class TfPoseEstimator:
             config.gpu_options.allow_growth = True
             self.persistent_sess = tf.Session(graph=self.graph, config=config)
             loader.restore(self.persistent_sess, graph_path)
-
+        '''
         for ts in [n.name for n in tf.get_default_graph().as_graph_def().node]:
             print(ts)
-
+        '''
         self.tensor_image = self.graph.get_tensor_by_name('TfPoseEstimator/image:0')
         self.tensor_output = self.graph.get_tensor_by_name('TfPoseEstimator/Openpose/concat_stage7:0')
         self.tensor_heatMat = self.tensor_output[:, :, :, :19]

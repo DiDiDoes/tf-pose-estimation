@@ -107,7 +107,7 @@ def get_network(type, placeholder_input, sess_for_load=None, trainable=True):
 
     elif type == 'efficientdet-d0':
         net = EfficientdetNetwork({'image': placeholder_input}, trainable=trainable)
-        pretrain_path_full = '/data/models/baseline-spot4f/model_latest-128003'
+        pretrain_path_full = '/home/ubuntu/tf-pose-estimation/models/pretrained/efficientdet-d0/model'
         last_layer = 'Mconv7_stage6_L{aux}'
 
     else:
@@ -233,7 +233,7 @@ if __name__ == '__main__':
 
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-
+        
         try:
             print('Restore all weights.')
             loader = tf.train.Saver(net.restorable_variables(only_backbone=False))
@@ -244,7 +244,7 @@ if __name__ == '__main__':
             loader = tf.train.Saver(net.restorable_variables())
             loader.restore(sess, pretrain_path)
             print('Restore pretrained weights...Done')
-
+        
         graph = tf.get_default_graph()
 
         print('stats before freezing')

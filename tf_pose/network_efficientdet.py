@@ -143,9 +143,18 @@ if __name__ == '__main__':
 
     print(set(list2) - set(list1))
 
-    with tf.Session() as sess:
+    config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)
+    config.gpu_options.allow_growth = True
+    with tf.Session(config = config) as sess:
         sess.run(tf.global_variables_initializer())
+	
+        for v in tf.global_variables():
+            if v.name == "efficientnet-b0/blocks_7/tpu_batch_normalization_2/gamma:0":
+                print(sess.run(v))
+
         loader = tf.train.Saver(network2.restorable_variables())
         loader.restore(sess, './models/pretrained/efficientdet-d0/model')
-    
 
+        for v in tf.global_variables():
+            if v.name == "efficientnet-b0/blocks_7/tpu_batch_normalization_2/gamma:0":
+                print(sess.run(v))
