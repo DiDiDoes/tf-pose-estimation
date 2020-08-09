@@ -394,6 +394,20 @@ class BaseNetwork(object):
         return tf.add_n(inputs, name=name)
 
     @layer
+    def weighted_feature_fusion(self, inputs, name):
+        dtype = inputs[0].dtype
+        edge_weights = []
+        for index in range(len(inputs)):
+            if index == 0:
+                edge_weights.append(tf.nn.relu(tf.cast(tf.get_variable(initializer=1.0, name='WSM'), dtype=dtype)))
+            else:
+                edge_weights.append(tf.nn.relu(tf.cast(tf.get_variable(initializer=1.0, name='WSM_%d' %index), dtype=dtype)))
+        weights_sum = tf.add_n(edge_weights)
+        nodes = [inputs[i] * edge_weights[i] / (weights_sum + 0.0001)
+             for i in range(len(inputs))]
+        return tf.add_n(nodes, name=name)
+
+    @layer
     def fc(self, input, num_out, name, relu=True):
         with tf.variable_scope(name) as scope:
             input_shape = input.get_shape()

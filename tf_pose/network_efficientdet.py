@@ -37,14 +37,24 @@ class EfficientdetNetwork(network_base.BaseNetwork):
         self.feed('efficientdet-d0/P5').upsample(factor='efficientdet-d0/P3', name='efficientdet-d0/P5_upsample')
         self.feed('efficientdet-d0/P6').upsample(factor='efficientdet-d0/P3', name='efficientdet-d0/P6_upsample')
         self.feed('efficientdet-d0/P7').upsample(factor='efficientdet-d0/P3', name='efficientdet-d0/P7_upsample')
-
-        (self.feed(
-            'efficientdet-d0/P3',
-            'efficientdet-d0/P4_upsample',
-            'efficientdet-d0/P5_upsample',
-            'efficientdet-d0/P6_upsample',
-            'efficientdet-d0/P7_upsample',
-        ).concat(3, name='feat_concat'))
+        
+        if False:
+            (self.feed(
+                'efficientdet-d0/P3',
+                'efficientdet-d0/P4_upsample',
+                'efficientdet-d0/P5_upsample',
+                'efficientdet-d0/P6_upsample',
+                'efficientdet-d0/P7_upsample',
+            ).concat(3, name='feat_concat'))
+        else:
+            with tf.variable_scope('neck_fusion', reuse=tf.AUTO_REUSE):
+                (self.feed(
+                    'efficientdet-d0/P3',
+                    'efficientdet-d0/P4_upsample',
+                    'efficientdet-d0/P5_upsample',
+                    'efficientdet-d0/P6_upsample',
+                    'efficientdet-d0/P7_upsample',
+                ).weighted_feature_fusion(name='feat_concat'))
 
         feature_lv = 'feat_concat'
         with tf.variable_scope(None, 'Openpose'):
@@ -109,7 +119,7 @@ class EfficientdetNetwork(network_base.BaseNetwork):
     def restorable_variables(self, only_backbone=True):
         vs = {v.op.name: v for v in tf.global_variables() if
               ('efficientnet-b0' in v.op.name or 'resample_p6' in v.op.name or
-               'fpn_cells' in v.op.name or (only_backbone is False and 'Openpose' in v.op.name)) and
+               'fpn_cells' in v.op.name or (only_backbone is False and ('Openpose' in v.op.name or 'neck_fusion' in v.op.name))) and
               # 'global_step' not in v.op.name and
               # 'beta1_power' not in v.op.name and 'beta2_power' not in v.op.name and
               'quant' not in v.op.name and
@@ -120,7 +130,7 @@ class EfficientdetNetwork(network_base.BaseNetwork):
         # print(vs.keys())
         print(len(tf.global_variables()))
         print(len(vs))
-        print(len([v.op.name for v in tf.global_variables() if 'Openpose' in v.op.name]))
+        print(len([v.op.name for v in tf.global_variables() if 'Openpose' in v.op.name or 'neck_fusion' in v.op.name]))
         return vs
 
 if __name__ == '__main__':
