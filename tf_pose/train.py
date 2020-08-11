@@ -40,8 +40,8 @@ if __name__ == '__main__':
     parser.add_argument('--imgpath', type=str, default='/data/coco/')
     parser.add_argument('--batchsize', type=int, default=128)
     parser.add_argument('--gpus', type=int, default=4)
-    parser.add_argument('--max-epoch', type=int, default=100)
-    parser.add_argument('--lr', type=str, default='0.001')
+    parser.add_argument('--max-epoch', type=int, default=40)
+    parser.add_argument('--lr', type=str, default='head')
     parser.add_argument('--tag', type=str, default='baseline-fuse2')
     parser.add_argument('--checkpoint', type=str, default='/data/models/baseline-fuse2/')
 
@@ -134,6 +134,12 @@ if __name__ == '__main__':
             # learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step,
             #                                            decay_steps=10000, decay_rate=0.33, staircase=True)
             learning_rate = tf.train.cosine_decay(starter_learning_rate, global_step, args.max_epoch * step_per_epoch, alpha=0.0)
+        elif 'head' in args.lr:
+            learning_rate = tf.train.piecewise_constant(global_step, [step_per_epoch], [0.001, 0.001])
+        elif 'finetune' in args.lr:
+            lrs = [0.001, 0.0001, 0.0001]
+            boundaries = [step_per_epoch*50, step_per_epoch*80, step_per_epoch*100]
+            learning_rate = tf.train.piecewise_constant(global_step, boundaries, lrs)
         else:
             lrs = [float(x) for x in args.lr.split(',')]
             boundaries = [step_per_epoch * 5 * i for i, _ in range(len(lrs)) if i > 0]
@@ -148,11 +154,11 @@ if __name__ == '__main__':
     optimizer = tf.train.AdamOptimizer(learning_rate, epsilon=1e-8)
     # optimizer = tf.train.MomentumOptimizer(learning_rate, momentum=0.8, use_locking=True, use_nesterov=True)
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-    # var_list = {v.op.name: v for v in tf.global_variables() if 'Openpose' in v.op.name}
+    var_list = {v.op.name: v for v in tf.global_variables() if 'Openpose' in v.op.name}
     # var_list = net.restorable_variables(only_backbone=False)
     # logger.info(var_list)
     with tf.control_dependencies(update_ops):
-        train_op = optimizer.minimize(total_loss, global_step, colocate_gradients_with_ops=True)#, var_list=var_list)
+        train_op = optimizer.minimize(total_loss, global_step, colocate_gradients_with_ops=True, var_list=var_list)
     logger.info('define model-')
 
     # define summary
@@ -205,7 +211,7 @@ if __name__ == '__main__':
             logger.info('Restore pretrained weights...Done')
         
         logger.info('prepare file writer')
-        file_writer = tf.summary.FileWriter(os.path.join(logpath, args.tag), sess.graph)
+        file_writer = tf.summary.FileWriter(os.path.join(logpath, args.tag))#, sess.graph)
 
         logger.info('prepare coordinator')
         coord = tf.train.Coordinator()

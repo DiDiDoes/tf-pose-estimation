@@ -38,7 +38,7 @@ class EfficientdetNetwork(network_base.BaseNetwork):
         self.feed('efficientdet-d0/P6').upsample(factor='efficientdet-d0/P3', name='efficientdet-d0/P6_upsample')
         self.feed('efficientdet-d0/P7').upsample(factor='efficientdet-d0/P3', name='efficientdet-d0/P7_upsample')
         
-        if False:
+        if True:
             (self.feed(
                 'efficientdet-d0/P3',
                 'efficientdet-d0/P4_upsample',
@@ -57,6 +57,7 @@ class EfficientdetNetwork(network_base.BaseNetwork):
                 ).weighted_feature_fusion(name='feat_concat'))
 
         feature_lv = 'feat_concat'
+        #feature_lv = 'efficientdet-d0/P3'
         with tf.variable_scope(None, 'Openpose'):
             prefix = 'MConv_Stage1'
             (self.feed(feature_lv)
