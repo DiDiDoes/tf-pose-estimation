@@ -408,6 +408,10 @@ class BaseNetwork(object):
         return tf.add_n(nodes, name=name)
 
     @layer
+    def identity(self, inputs, name):
+        return tf.identity(inputs, name=name)
+
+    @layer
     def fc(self, input, num_out, name, relu=True):
         with tf.variable_scope(name) as scope:
             input_shape = input.get_shape()

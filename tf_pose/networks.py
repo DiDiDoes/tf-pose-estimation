@@ -14,6 +14,7 @@ from network_cmu import CmuNetwork
 from network_mobilenet_v2 import Mobilenetv2Network
 from network_efficientnet import EfficientnetNetwork
 from network_efficientdet import EfficientdetNetwork
+from network_efficientdet2 import EfficientdetNetwork2
 
 
 def _get_base_path():
@@ -110,6 +111,11 @@ def get_network(type, placeholder_input, sess_for_load=None, trainable=True):
         pretrain_path_full = '/home/ubuntu/tf-pose-estimation/models/pretrained/efficientdet-d0/model'
         last_layer = 'Mconv7_stage6_L{aux}'
 
+    elif type == 'efficientdet2':
+        net = EfficientdetNetwork2({'image': placeholder_input}, trainable=trainable)
+        pretrain_path_full = '/home/ubuntu/tf-pose-estimation/models/pretrained/efficientdet-d0/model'
+        last_layer = 'Mconv7_stage6_L{aux}'
+
     else:
         raise Exception('Invalid Model Name.')
 
@@ -154,7 +160,8 @@ def get_graph_path(model_name):
         'mobilenet_v2_large_quantize': 'graph/mobilenet_v2_large/graph_opt_q.pb',
         'mobilenet_v2_small': 'graph/mobilenet_v2_small/graph_opt.pb',
         'efficientnet-b0': '/data/models/backbone.pb',
-        'efficientdet-d0': '/data/models/baseline-spot4m.pb'
+        'efficientdet-d0': '/data/models/baseline-spot4m.pb',
+        'efficientdet2': '/data/models/baseline-densefuse.pb'
     }
 
     base_data_dir = dirname(dirname(abspath(__file__)))
