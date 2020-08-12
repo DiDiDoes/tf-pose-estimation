@@ -108,18 +108,18 @@ def get_network(type, placeholder_input, sess_for_load=None, trainable=True):
 
     elif type == 'efficientdet-d0':
         net = EfficientdetNetwork({'image': placeholder_input}, trainable=trainable)
-        pretrain_path_full = '/home/ubuntu/tf-pose-estimation/models/pretrained/efficientdet-d0/model'
+        pretrain_path = 'pretrained/efficientdet-d0/model'
         last_layer = 'Mconv7_stage6_L{aux}'
 
     elif type == 'efficientdet2':
         net = EfficientdetNetwork2({'image': placeholder_input}, trainable=trainable)
-        pretrain_path_full = '/home/ubuntu/tf-pose-estimation/models/pretrained/efficientdet-d0/model'
+        pretrain_path_full = 'pretrained/efficientdet-d0/model'
         last_layer = 'Mconv7_stage6_L{aux}'
 
     else:
         raise Exception('Invalid Model Name.')
 
-    # pretrain_path_full = os.path.join(_get_base_path(), pretrain_path)
+    pretrain_path_full = os.path.join(_get_base_path(), pretrain_path)
     if sess_for_load is not None:
         if type in ['cmu', 'vgg', 'openpose']:
             if not os.path.isfile(pretrain_path_full):
@@ -228,8 +228,8 @@ def print_params(constant_values):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Training codes for Openpose using Tensorflow')
-    parser.add_argument('--model', default='efficientdet-d0', help='model name')
-    parser.add_argument('--graph', default='efficientdet-d0', help='graph name')
+    parser.add_argument('--model', default='efficientnet-b0', help='model name')
+    parser.add_argument('--graph', default='cmu', help='graph name')
     args = parser.parse_args()
     
     print('Creating model: ', args.model)
@@ -241,7 +241,7 @@ if __name__ == '__main__':
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         var_list = net.restorable_variables()
-        '''
+        
         try:
             print('Restore all weights.')
             loader = tf.train.Saver(net.restorable_variables(only_backbone=False))
@@ -252,7 +252,7 @@ if __name__ == '__main__':
             loader = tf.train.Saver(net.restorable_variables())
             loader.restore(sess, pretrain_path)
             print('Restore pretrained weights...Done')
-        '''
+        
         graph = tf.get_default_graph()
 
         print('stats before freezing')

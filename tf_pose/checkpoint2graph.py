@@ -7,14 +7,14 @@ def ckpt_tensors(ckpt):
     reader = pywrap_tensorflow.NewCheckpointReader(ckpt)
     var_to_shape_map = reader.get_variable_to_shape_map()
     for key in var_to_shape_map:
-        if "batch_normalization" in key:
+        if "efficient" in key:
             print("tensor_name: ", key)
-            print(reader.get_tensor(key))
+            # print(reader.get_tensor(key))
 
 
 if __name__ == '__main__':
     # ckpt = '/data/models/baseline-spot4f/model_latest-'
-    ckpt = './models/pretrained/efficientdet-d0/model'
+    ckpt = './models/pretrained/efficientnet-b0/model.ckpt'
     #ckpt = tf.train.latest_checkpoint('/data/models/baseline-spot4m/')
     ckpt_tensors(ckpt)
 

@@ -20,7 +20,7 @@ logger = logging.getLogger('train')
 logger.handlers.clear()
 logger.setLevel(logging.DEBUG)
 
-ch = logging.FileHandler('/data/models/baseline-fuse2.txt')
+ch = logging.FileHandler('/data/models/efficientnet.txt')
 ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter('[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s')
 ch.setFormatter(formatter)
@@ -35,15 +35,15 @@ logger.addHandler(console)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Training codes for Openpose using Tensorflow')
-    parser.add_argument('--model', default='efficientdet2', help='model name')
+    parser.add_argument('--model', default='efficientnet', help='model name')
     parser.add_argument('--datapath', type=str, default='/data/coco/annotations')
     parser.add_argument('--imgpath', type=str, default='/data/coco/')
-    parser.add_argument('--batchsize', type=int, default=48)
-    parser.add_argument('--gpus', type=int, default=1)
-    parser.add_argument('--max-epoch', type=int, default=40)
-    parser.add_argument('--lr', type=str, default='head,')
-    parser.add_argument('--tag', type=str, default='baseline-fuse2')
-    parser.add_argument('--checkpoint', type=str, default='/data/models/baseline-fuse2/')
+    parser.add_argument('--batchsize', type=int, default=256)
+    parser.add_argument('--gpus', type=int, default=8)
+    parser.add_argument('--max-epoch', type=int, default=140)
+    parser.add_argument('--lr', type=str, default='all,')
+    parser.add_argument('--tag', type=str, default='efficientnet')
+    parser.add_argument('--checkpoint', type=str, default='/data/models/efficientnet/')
 
     parser.add_argument('--input-width', type=int, default=384)
     parser.add_argument('--input-height', type=int, default=384)
@@ -138,7 +138,11 @@ if __name__ == '__main__':
             learning_rate = tf.train.piecewise_constant(global_step, [step_per_epoch], [0.001, 0.001])
         elif 'finetune' in args.lr:
             lrs = [0.001, 0.0001, 0.0001]
-            boundaries = [step_per_epoch*50, step_per_epoch*80, step_per_epoch*100]
+            boundaries = [step_per_epoch*50, step_per_epoch*80]
+            learning_rate = tf.train.piecewise_constant(global_step, boundaries, lrs)
+        elif 'all' in args.lr:
+            lrs = [0.001, 0.0001, 0.0001]
+            boundaries = [step_per_epoch*90, step_per_epoch*120]
             learning_rate = tf.train.piecewise_constant(global_step, boundaries, lrs)
         else:
             lrs = [float(x) for x in args.lr.split(',')]
@@ -154,11 +158,11 @@ if __name__ == '__main__':
     optimizer = tf.train.AdamOptimizer(learning_rate, epsilon=1e-8)
     # optimizer = tf.train.MomentumOptimizer(learning_rate, momentum=0.8, use_locking=True, use_nesterov=True)
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-    var_list = {v.op.name: v for v in tf.global_variables() if 'Openpose' in v.op.name}
+    # var_list = {v.op.name: v for v in tf.global_variables() if 'Openpose' in v.op.name}
     # var_list = net.restorable_variables(only_backbone=False)
     # logger.info(var_list)
     with tf.control_dependencies(update_ops):
-        train_op = optimizer.minimize(total_loss, global_step, colocate_gradients_with_ops=True, var_list=var_list)
+        train_op = optimizer.minimize(total_loss, global_step, colocate_gradients_with_ops=True)#, var_list=var_list)
     logger.info('define model-')
 
     # define summary

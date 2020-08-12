@@ -32,8 +32,10 @@ class EfficientnetNetwork(network_base.BaseNetwork):
         # for n, l in enumerate(self.layers):
         #     print(l)
 
+        self.feed('efficientnet-b0/block_2').max_pool(2, 2, 2, 2, name='efficientnet-b0/block_2_pool')
         self.feed('efficientnet-b0/block_10').upsample(factor='efficientnet-b0/block_4', name='efficientnet-b0/block_10_upsample')
         (self.feed(
+            'efficientnet-b0/block_2_pool',
             'efficientnet-b0/block_4',
             'efficientnet-b0/block_10_upsample',
             # 'base/layer_4/output/downsample'
@@ -109,6 +111,9 @@ class EfficientnetNetwork(network_base.BaseNetwork):
               'Ada' not in v.op.name and 'Adam' not in v.op.name
               }
         # print(set([v.op.name for v in tf.global_variables()]) - set(list(vs.keys())))
+        # print(len(tf.global_variables()))
+        # print(len(vs))
+        # print(len([v.op.name for v in tf.global_variables() if 'Openpose' in v.op.name]))
         return vs
 
 if __name__ == '__main__':
@@ -126,8 +131,8 @@ if __name__ == '__main__':
 
     num_params = np.sum([np.prod(v.shape) for v in tf.trainable_variables()])
     print(num_params)
-
-    all_var = [t.name for t in tf.global_variables()]
-    print(all_var)
+    print(network2.restorable_variables())
+    #all_var = [t.name for t in tf.global_variables()]
+    #print(all_var)
 
 
