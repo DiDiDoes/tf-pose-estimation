@@ -38,8 +38,8 @@ if __name__ == '__main__':
     parser.add_argument('--model', default='efficientnet-b0', help='model name')
     parser.add_argument('--datapath', type=str, default='/data/coco/annotations')
     parser.add_argument('--imgpath', type=str, default='/data/coco/')
-    parser.add_argument('--batchsize', type=int, default=256)
-    parser.add_argument('--gpus', type=int, default=8)
+    parser.add_argument('--batchsize', type=int, default=128)
+    parser.add_argument('--gpus', type=int, default=4)
     parser.add_argument('--max-epoch', type=int, default=140)
     parser.add_argument('--lr', type=str, default='all,')
     parser.add_argument('--tag', type=str, default='efficientnet')
@@ -137,11 +137,11 @@ if __name__ == '__main__':
         elif 'head' in args.lr:
             learning_rate = tf.train.piecewise_constant(global_step, [step_per_epoch], [0.001, 0.001])
         elif 'finetune' in args.lr:
-            lrs = [0.001, 0.0001, 0.0001]
+            lrs = [0.001, 0.0001, 0.00001]
             boundaries = [step_per_epoch*50, step_per_epoch*80]
             learning_rate = tf.train.piecewise_constant(global_step, boundaries, lrs)
         elif 'all' in args.lr:
-            lrs = [0.001, 0.0001, 0.0001]
+            lrs = [0.001, 0.0001, 0.00001]
             boundaries = [step_per_epoch*90, step_per_epoch*120]
             learning_rate = tf.train.piecewise_constant(global_step, boundaries, lrs)
         else:
@@ -215,7 +215,7 @@ if __name__ == '__main__':
             logger.info('Restore pretrained weights...Done')
         
         logger.info('prepare file writer')
-        file_writer = tf.summary.FileWriter(os.path.join(logpath, args.tag))#, sess.graph)
+        file_writer = tf.summary.FileWriter(os.path.join(logpath, args.tag), sess.graph)
 
         logger.info('prepare coordinator')
         coord = tf.train.Coordinator()

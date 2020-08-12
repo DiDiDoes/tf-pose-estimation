@@ -241,7 +241,7 @@ if __name__ == '__main__':
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         var_list = net.restorable_variables()
-        '''
+        
         try:
             print('Restore all weights.')
             loader = tf.train.Saver(net.restorable_variables(only_backbone=False))
@@ -252,7 +252,7 @@ if __name__ == '__main__':
             loader = tf.train.Saver(net.restorable_variables())
             loader.restore(sess, pretrain_path)
             print('Restore pretrained weights...Done')
-        '''
+        
         graph = tf.get_default_graph()
 
         print('stats before freezing')

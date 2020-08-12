@@ -11,14 +11,14 @@ import tensorflow.contrib.slim as slim
 
 
 class EfficientnetNetwork(network_base.BaseNetwork):
-    def __init__(self, inputs, trainable=True, conv_width=1.0, conv_width2=0.3):
+    def __init__(self, inputs, trainable=True, conv_width=1.0, conv_width2=0.5):
         self.conv_width = conv_width
         self.refine_width = conv_width2
         network_base.BaseNetwork.__init__(self, inputs, trainable)
 
     @layer
     def base(self, input, name):
-        net, endpoints = efficientnet_builder.build_model(input, name, training=False)
+        net, endpoints = efficientnet_builder.build_model_base(input, name, training=True)
         for k, tensor in sorted(list(endpoints.items()), key=lambda x: x[0]):
             self.layers['%s/%s' % (name, k)] = tensor
             print(k, tensor.shape)
@@ -111,9 +111,9 @@ class EfficientnetNetwork(network_base.BaseNetwork):
               'Ada' not in v.op.name and 'Adam' not in v.op.name
               }
         # print(set([v.op.name for v in tf.global_variables()]) - set(list(vs.keys())))
-        # print(len(tf.global_variables()))
-        # print(len(vs))
-        # print(len([v.op.name for v in tf.global_variables() if 'Openpose' in v.op.name]))
+        print(len(tf.global_variables()))
+        print(len(vs))
+        print(len([v.op.name for v in tf.global_variables() if 'Openpose' in v.op.name]))
         return vs
 
 if __name__ == '__main__':
@@ -131,7 +131,7 @@ if __name__ == '__main__':
 
     num_params = np.sum([np.prod(v.shape) for v in tf.trainable_variables()])
     print(num_params)
-    print(network2.restorable_variables())
+    network2.restorable_variables()
     #all_var = [t.name for t in tf.global_variables()]
     #print(all_var)
 
