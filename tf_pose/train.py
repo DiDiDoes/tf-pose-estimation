@@ -35,7 +35,7 @@ logger.addHandler(console)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Training codes for Openpose using Tensorflow')
-    parser.add_argument('--model', default='efficientnet', help='model name')
+    parser.add_argument('--model', default='efficientnet-b0', help='model name')
     parser.add_argument('--datapath', type=str, default='/data/coco/annotations')
     parser.add_argument('--imgpath', type=str, default='/data/coco/')
     parser.add_argument('--batchsize', type=int, default=256)
