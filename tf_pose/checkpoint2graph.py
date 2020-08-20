@@ -26,7 +26,7 @@ def ckpt_tensors(ckpt):
 if __name__ == '__main__':
     #ckpt = '/data/models/baseline-spot4f/model_latest-'
     #ckpt = './models/pretrained/efficientnet-b0/model.ckpt'
-    ckpt = tf.train.latest_checkpoint('/data/models/test/')
+    ckpt = tf.train.latest_checkpoint('/data/models/efd/')
     print(ckpt)
     #ckpt_tensors(ckpt)
 
@@ -59,7 +59,7 @@ if __name__ == '__main__':
                 ['Openpose/concat_stage7']
                 )
 
-        with tf.gfile.GFile('/data/models/test.pb', 'wb') as fid:
+        with tf.gfile.GFile('/data/models/efficientdet.pb', 'wb') as fid:
             serialized_graph = output_graph_def.SerializeToString()
             fid.write(serialized_graph)
     '''

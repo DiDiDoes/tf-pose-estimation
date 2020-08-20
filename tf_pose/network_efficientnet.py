@@ -134,5 +134,13 @@ if __name__ == '__main__':
     network2.restorable_variables()
     #all_var = [t.name for t in tf.global_variables()]
     #print(all_var)
-
-
+    glo = [v.op.name for v in tf.global_variables()]
+    print(len(tf.global_variables()))
+    trainable = [v.op.name for v in tf.trainable_variables()]
+    print(len(tf.trainable_variables()))
+    #print(set(glo) - set(trainable))
+    print(len([v.op.name for v in tf.global_variables() if 'moving' in v.op.name]))
+    l1s, l2s = network2.loss_l1_l2()
+    print(len(l1s))
+    l1l, l2l = network2.loss_last()
+    print(l1l)

@@ -34,7 +34,7 @@ if __name__ == '__main__':
     parser.add_argument('--batchsize', type=int, default=16)
     parser.add_argument('--gpus', type=int, default=1)
     parser.add_argument('--max-epoch', type=int, default=600)
-    parser.add_argument('--lr', type=str, default='0.0001')
+    parser.add_argument('--lr', type=str, default='0.001')
     parser.add_argument('--tag', type=str, default='test')
     parser.add_argument('--checkpoint', type=str, default='/data/models/test/')
 
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     set_network_input_wh(args.input_width, args.input_height)
     scale = 4
 
-    if args.model in ['cmu', 'vgg'] or 'mobilenet' in args.model:
+    if args.model in ['cmu', 'vgg'] or 'mobilenet' in args.model or 'efficient' in args.model:
         scale = 8
 
     set_network_scale(scale)
@@ -224,7 +224,7 @@ if __name__ == '__main__':
                     file_writer.add_summary(summary, curr_epoch)
                     last_log_epoch1 = curr_epoch
 
-            if gs_num - last_gs_num2 >= 2000:
+            if gs_num - last_gs_num2 >= 2500:
                 # save weights
                 saver.save(sess, os.path.join(modelpath, args.tag, 'model_latest'), global_step=global_step)
 
