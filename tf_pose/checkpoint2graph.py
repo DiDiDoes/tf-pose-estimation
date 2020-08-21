@@ -5,6 +5,7 @@ import os
 import tensorflow as tf
 from tensorflow.python.framework import graph_util
 from tensorflow.python import pywrap_tensorflow
+from networks import get_network, model_wh, _get_base_path
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 

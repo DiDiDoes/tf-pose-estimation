@@ -478,7 +478,7 @@ if __name__ == '__main__':
     set_network_scale(8)
 
     # df = get_dataflow('/data/public/rw/coco/annotations', True, '/data/public/rw/coco/')
-    df = _get_dataflow_onlyread('/data/public/rw/coco/annotations', True, '/data/public/rw/coco/')
+    df = _get_dataflow_onlyread('/home/chengdicao/COCO/annotations', True, '/home/chengdicao/COCO/')
     # df = get_dataflow('/root/coco/annotations', False, img_path='http://gpu-twg.kakaocdn.net/braincloud/COCO/')
 
     from tensorpack.dataflow.common import TestDataSpeed

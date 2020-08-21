@@ -36,7 +36,7 @@ if __name__ == '__main__':
     parser.add_argument('--max-epoch', type=int, default=600)
     parser.add_argument('--lr', type=str, default='0.001')
     parser.add_argument('--tag', type=str, default='test')
-    parser.add_argument('--checkpoint', type=str, default='/data/models/test/')
+    parser.add_argument('--checkpoint', type=str, default='')
 
     parser.add_argument('--input-width', type=int, default=432)
     parser.add_argument('--input-height', type=int, default=368)
@@ -201,8 +201,9 @@ if __name__ == '__main__':
 
         logger.info('Training Started.')
         time_started = time.time()
-        last_gs_num = last_gs_num2 = 0
+        #last_gs_num = last_gs_num2 = 0
         initial_gs_num = sess.run(global_step)
+        last_gs_num = last_gs_num2 = initial_gs_num
 
         last_log_epoch1 = last_log_epoch2 = -1
         while True:

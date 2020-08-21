@@ -159,8 +159,8 @@ def get_graph_path(model_name):
         'mobilenet_v2_large_r0.5': 'graph/mobilenet_v2_large/graph_r0.5_opt.pb',
         'mobilenet_v2_large_quantize': 'graph/mobilenet_v2_large/graph_opt_q.pb',
         'mobilenet_v2_small': 'graph/mobilenet_v2_small/graph_opt.pb',
-        'efficientnet-b0': '/data/models/backbone.pb',
-        'efficientdet-d0': '/data/models/baseline-spot4m.pb',
+        'efficientnet-b0': '/data/models/efficientnet.pb',
+        'efficientdet-d0': '/data/models/efficientdet.pb',
         'efficientdet2': '/data/models/baseline-densefuse.pb'
     }
 

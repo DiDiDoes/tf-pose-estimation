@@ -165,6 +165,9 @@ if __name__ == '__main__':
 
         loader = tf.train.Saver(network2.restorable_variables())
         loader.restore(sess, './models/pretrained/efficientdet-d0/model')
+        print(len(tf.trainable_variables()))
+        bv = {v.op.name: v for v in tf.global_variables() if 'moving' in v.op.name}
+        print(len(bv))
 
         for v in tf.global_variables():
             if v.name == "efficientnet-b0/blocks_7/tpu_batch_normalization_2/gamma:0":
