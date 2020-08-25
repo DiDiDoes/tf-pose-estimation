@@ -144,3 +144,8 @@ if __name__ == '__main__':
     print(len(l1s))
     l1l, l2l = network2.loss_last()
     print(l1l)
+    global_step = tf.Variable(0, trainable=False)
+    learning_rate = tf.train.cosine_decay(0.001, global_step, 100, alpha=0.0)
+    optimizer = tf.train.AdamOptimizer(learning_rate, epsilon=1e-8)
+    var_list = [var for var in tf.trainable_variables() if var.name.startswith("Openpose")]
+    print(var_list)

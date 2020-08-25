@@ -25,17 +25,20 @@ def ckpt_tensors(ckpt):
 
 
 if __name__ == '__main__':
-    #ckpt = '/data/models/baseline-spot4f/model_latest-'
-    #ckpt = './models/pretrained/efficientnet-b0/model.ckpt'
-    ckpt = tf.train.latest_checkpoint('/data/models/efd/')
-    print(ckpt)
-    #ckpt_tensors(ckpt)
-
     parser = argparse.ArgumentParser(description='Tensorflow Pose Estimation Graph Extractor')
     parser.add_argument('--model', type=str, default='cmu', help='cmu / mobilenet / mobilenet_thin / mobilenet_v2_large / mobilenet_v2_small')
     parser.add_argument('--resize', type=str, default='0x0')
+    parser.add_argument('--tag', type=str, default='test')
+    parser.add_argument('--epoch', type=str, default='latest')
     parser.add_argument('--quantize', action='store_true')
     args = parser.parse_args()
+
+    if 'latest' in args.epoch:
+        ckpt = tf.train.latest_checkpoint('/data/models/%s/' %(args.tag))
+    else:
+        ckpt = '/data/models/%s/model_latest-%s' %(args.tag, args.epoch)
+    print(ckpt)
+    #ckpt_tensors(ckpt)
 
     w, h = model_wh(args.resize)
     if w <= 0 or h <= 0:

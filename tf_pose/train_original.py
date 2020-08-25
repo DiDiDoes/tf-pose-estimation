@@ -138,9 +138,10 @@ if __name__ == '__main__':
     # optimizer = tf.train.RMSPropOptimizer(learning_rate, decay=0.0005, momentum=0.9, epsilon=1e-10)
     optimizer = tf.train.AdamOptimizer(learning_rate, epsilon=1e-8)
     # optimizer = tf.train.MomentumOptimizer(learning_rate, momentum=0.8, use_locking=True, use_nesterov=True)
+    var_list = [var for var in tf.trainable_variables() if var.name.startswith("Openpose")]
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     with tf.control_dependencies(update_ops):
-        train_op = optimizer.minimize(total_loss, global_step, colocate_gradients_with_ops=True)
+        train_op = optimizer.minimize(total_loss, global_step, colocate_gradients_with_ops=True, var_list=var_list)
     logger.info('define model-')
 
     # define summary
