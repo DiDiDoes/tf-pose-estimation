@@ -13,6 +13,7 @@ from network_mobilenet_thin import MobilenetNetworkThin
 from network_cmu import CmuNetwork
 from network_mobilenet_v2 import Mobilenetv2Network
 from network_efficientnet import EfficientnetNetwork
+from network_efficientnet1 import EfficientnetNetwork1
 from network_efficientdet import EfficientdetNetwork
 from network_efficientdet2 import EfficientdetNetwork2
 
@@ -106,6 +107,11 @@ def get_network(type, placeholder_input, sess_for_load=None, trainable=True):
         pretrain_path = 'pretrained/efficientnet-b0/model.ckpt'
         last_layer = 'Mconv7_stage6_L{aux}'
 
+    elif type == 'efficientnet-b1':
+        net = EfficientnetNetwork1({'image': placeholder_input}, trainable=trainable)
+        pretrain_path = 'pretrained/efficientnet-b1/model.ckpt'
+        last_layer = 'Mconv7_stage6_L{aux}'
+
     elif type == 'efficientdet-d0':
         net = EfficientdetNetwork({'image': placeholder_input}, trainable=trainable)
         pretrain_path = 'pretrained/efficientdet-d0/model'
@@ -160,6 +166,7 @@ def get_graph_path(model_name):
         'mobilenet_v2_large_quantize': 'graph/mobilenet_v2_large/graph_opt_q.pb',
         'mobilenet_v2_small': 'graph/mobilenet_v2_small/graph_opt.pb',
         'efficientnet-b0': '/data/models/efficientnet.pb',
+        'efficientnet-b1': '/data/models/efficientnet.pb',
         'efficientdet-d0': '/data/models/efficientdet.pb',
         'efficientdet2': '/data/models/baseline-densefuse.pb'
     }
