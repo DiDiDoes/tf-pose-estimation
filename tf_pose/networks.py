@@ -14,7 +14,9 @@ from network_cmu import CmuNetwork
 from network_mobilenet_v2 import Mobilenetv2Network
 from network_efficientnet import EfficientnetNetwork
 from network_efficientnet1 import EfficientnetNetwork1
+from network_efficientnet2 import EfficientnetNetwork2
 from network_efficientdet import EfficientdetNetwork
+from network_efficientdet1 import EfficientdetNetwork1
 from network_efficientdet2 import EfficientdetNetwork2
 
 
@@ -112,9 +114,19 @@ def get_network(type, placeholder_input, sess_for_load=None, trainable=True):
         pretrain_path = 'pretrained/efficientnet-b1/model.ckpt'
         last_layer = 'Mconv7_stage6_L{aux}'
 
+    elif type == 'efficientnet-b2':
+        net = EfficientnetNetwork2({'image': placeholder_input}, trainable=trainable)
+        pretrain_path = 'pretrained/efficientnet-b2/model.ckpt'
+        last_layer = 'Mconv7_stage6_L{aux}'
+
     elif type == 'efficientdet-d0':
         net = EfficientdetNetwork({'image': placeholder_input}, trainable=trainable)
         pretrain_path = 'pretrained/efficientdet-d0/model'
+        last_layer = 'Mconv7_stage6_L{aux}'
+
+    elif type == 'efficientdet-d1':
+        net = EfficientdetNetwork1({'image': placeholder_input}, trainable=trainable)
+        pretrain_path = 'pretrained/efficientdet-d1/model'
         last_layer = 'Mconv7_stage6_L{aux}'
 
     elif type == 'efficientdet2':
@@ -167,7 +179,9 @@ def get_graph_path(model_name):
         'mobilenet_v2_small': 'graph/mobilenet_v2_small/graph_opt.pb',
         'efficientnet-b0': '/data/models/efficientnet.pb',
         'efficientnet-b1': '/data/models/efficientnet.pb',
+        'efficientnet-b2': '/data/models/efficientnet.pb',
         'efficientdet-d0': '/data/models/efficientdet.pb',
+        'efficientdet-d1': '/data/models/efficientdet.pb',
         'efficientdet2': '/data/models/baseline-densefuse.pb'
     }
 
@@ -248,7 +262,7 @@ if __name__ == '__main__':
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         var_list = net.restorable_variables()
-        
+        '''
         try:
             print('Restore all weights.')
             loader = tf.train.Saver(net.restorable_variables(only_backbone=False))
@@ -259,7 +273,7 @@ if __name__ == '__main__':
             loader = tf.train.Saver(net.restorable_variables())
             loader.restore(sess, pretrain_path)
             print('Restore pretrained weights...Done')
-        
+        '''
         graph = tf.get_default_graph()
 
         print('stats before freezing')

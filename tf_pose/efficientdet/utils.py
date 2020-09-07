@@ -259,7 +259,7 @@ class SyncBatchNormalization(tf.keras.layers.BatchNormalization, tf.layers.Layer
     shard_mean, shard_variance = super(SyncBatchNormalization, self)._moments(
         inputs, reduction_axes, keep_dims=keep_dims)
 
-    num_shards = hvd.size()
+    num_shards = hvd.size() # 4
     if num_shards > 1 and self._sync:  # sync bn is 4x slower than non-sync.
       # Compute variance using: Var[X]= E[X^2] - E[X]^2.
       shard_square_of_mean = tf.math.square(shard_mean)
@@ -296,12 +296,15 @@ class BatchNormalization(tf.keras.layers.BatchNormalization, tf.layers.Layer):
 
 
 def batch_norm_class(is_training, strategy=None):
+  '''
   if is_training and strategy == 'tpu':
     return TpuBatchNormalization
   elif is_training and strategy == 'horovod':
     return SyncBatchNormalization
   else:
     return BatchNormalization
+  '''
+  return BatchNormalization
 
 
 def batch_normalization(inputs, training=False, strategy=None, **kwargs):

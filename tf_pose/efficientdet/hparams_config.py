@@ -300,7 +300,7 @@ efficientdet_model_param_dict = {
         dict(
             name='efficientdet-d1',
             backbone_name='efficientnet-b1',
-            image_size=640,
+            image_size=384,
             fpn_num_filters=88,
             fpn_cell_repeats=4,
             box_class_repeats=3,
